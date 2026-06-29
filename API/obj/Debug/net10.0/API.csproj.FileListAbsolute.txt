@@ -1,0 +1,8 @@
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.csproj.AssemblyReference.cache
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/rpswa.dswa.cache.json
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.AssemblyInfoInputs.cache
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.AssemblyInfo.cs
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.csproj.CoreCompileInputs.cache
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.MvcApplicationPartsAssemblyInfo.cache
+/mnt/Datos/Repos/Software-3.2/API/obj/Debug/net10.0/API.sourcelink.json
