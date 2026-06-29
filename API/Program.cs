@@ -7,7 +7,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de la conexión a MySQL
-string connectionString = "Server=localhost;Database=PizzeriaDB;User=root;Password=;";
+string connectionString = "Server=localhost;Database=PizzeriaDB;User=5to_agbd;Password=Trigg3rs!;";
 builder.Services.AddTransient(sp => new MySqlConnection(connectionString));
 
 builder.Services.AddEndpointsApiExplorer();
