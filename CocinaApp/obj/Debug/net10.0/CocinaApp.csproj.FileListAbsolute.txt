@@ -1,0 +1,15 @@
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\bin\Debug\net10.0\CocinaApp.exe
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\bin\Debug\net10.0\CocinaApp.deps.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\bin\Debug\net10.0\CocinaApp.runtimeconfig.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\bin\Debug\net10.0\CocinaApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\bin\Debug\net10.0\CocinaApp.pdb
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.AssemblyInfoInputs.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.AssemblyInfo.cs
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.sourcelink.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\refint\CocinaApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.pdb
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\CocinaApp.genruntimeconfig.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\CocinaApp\obj\Debug\net10.0\ref\CocinaApp.dll

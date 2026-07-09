@@ -1,0 +1,15 @@
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\bin\Debug\net10.0\ClienteApp.exe
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\bin\Debug\net10.0\ClienteApp.deps.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\bin\Debug\net10.0\ClienteApp.runtimeconfig.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\bin\Debug\net10.0\ClienteApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\bin\Debug\net10.0\ClienteApp.pdb
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.AssemblyInfoInputs.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.AssemblyInfo.cs
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.sourcelink.json
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\refint\ClienteApp.dll
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.pdb
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ClienteApp.genruntimeconfig.cache
+C:\Users\Administrator\Documents\GitHub\Software-3.2\API\ClienteApp\obj\Debug\net10.0\ref\ClienteApp.dll
