@@ -7,10 +7,10 @@ Console.ReadLine();
 
 using HttpClient client = new HttpClient();
 
-// Armamos el pedido usando los modelos relacionales
+// Ajustado a strings planos para emparejar directamente con las columnas de tu base de datos física
 var nuevoPedido = new {
-    Cliente = new { Nombre = "Estudiante ET12", Direccion = "Av. Siempre Viva 123" },
-    Pizza = new { Variedad = "Muzzarella", Precio = 8500.00 }
+    Cliente = "Estudiante ET12 - Av. Siempre Viva 123",
+    DetallePizza = "Muzzarella Grande - $8500.00"
 };
 
 string json = JsonSerializer.Serialize(nuevoPedido);
@@ -35,8 +35,9 @@ try
 } 
 catch (Exception ex) 
 {
-    // Manejo de excepción de red de lado del cliente
-    Console.WriteLine($"Error crítico de red: El backend está apagado o no responde. ({ex.Message})");
+    // Captura de errores asincrónicos si el backend está desconectado
+    Console.WriteLine($"Error de red: No se pudo contactar a la API. Detalle: ({ex.Message})");
 }
 
+Console.WriteLine("\nPresiona ENTER para cerrar.");
 Console.ReadLine();
