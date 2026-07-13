@@ -4,9 +4,9 @@ public class Pedido
 {
     public int Id { get; set; }
     
-    // Relaciones Orientadas a Objetos
-    public Cliente? Cliente { get; set; }
-    public Pizza? Pizza { get; set; }
+    // Volvemos a usar "string" plano para emparejar con el JSON del cliente y tu VARCHAR de SQL
+    public string? Cliente { get; set; }
+    public string? DetallePizza { get; set; }
     
     public string? ActorAsignado { get; set; }
     public string? Estado { get; set; }
