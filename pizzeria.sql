@@ -1,5 +1,7 @@
-CREATE DATABASE PizzeriaDB;
-USE PizzeriaDB;
+CREATE DATABASE 5to_PizzeriaDB;
+USE 5to_PizzeriaDB;
+
+
 
 CREATE TABLE Pedidos (
     Id INT AUTO_INCREMENT PRIMARY KEY,
