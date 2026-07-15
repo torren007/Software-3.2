@@ -4,11 +4,14 @@ public class Pedido
 {
     public int Id { get; set; }
     
-    // Volvemos a usar "string" plano para emparejar con el JSON del cliente y tu VARCHAR de SQL
-    public string? Cliente { get; set; }
-    public string? DetallePizza { get; set; }
+    // Clave Foránea y relación hacia el Cliente
+    public int ClienteId { get; set; }
+    public Cliente? Cliente { get; set; }
     
     public string? ActorAsignado { get; set; }
     public string? Estado { get; set; }
     public bool Activo { get; set; }
+    
+    // Relación hacia los detalles del pedido
+    public List<DetallePedido> Detalles { get; set; } = new();
 }
