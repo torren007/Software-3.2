@@ -9,8 +9,11 @@ using HttpClient client = new HttpClient();
 
 // Ajustado a strings planos para emparejar directamente con las columnas de tu base de datos física
 var nuevoPedido = new {
-    Cliente = "Estudiante ET12 - Av. Siempre Viva 123",
-    DetallePizza = "Muzzarella Grande - $8500.00"
+    ClienteNombre = "Estudiante ET12",
+    ClienteDireccion = "Av. Siempre Viva 123",
+    PizzaVariedad = "Muzzarella Grande",
+    PizzaPrecio = 8500.00m,
+    Cantidad = 1
 };
 
 string json = JsonSerializer.Serialize(nuevoPedido);
@@ -38,6 +41,7 @@ catch (Exception ex)
     // Captura de errores asincrónicos si el backend está desconectado
     Console.WriteLine($"Error de red: No se pudo contactar a la API. Detalle: ({ex.Message})");
 }
+
 
 Console.WriteLine("\nPresiona ENTER para cerrar.");
 Console.ReadLine();

@@ -1,4 +1,7 @@
+-- Active: 1776719132005@@127.0.0.1@3306@5to_pizzeriadb
 -- 1. Crear y usar la base de datos
+
+
 DROP DATABASE IF EXISTS 5to_PizzeriaDB;
 CREATE DATABASE 5to_PizzeriaDB;
 USE 5to_PizzeriaDB;
@@ -27,7 +30,6 @@ CREATE TABLE Pedidos (
     ActorAsignado VARCHAR(50) DEFAULT 'Cocina',
     Estado VARCHAR(50) DEFAULT 'Espera de confirmación',
     Activo TINYINT(1) DEFAULT 1, -- 1 = Activo, 0 = Borrado Lógico
-    
     -- Restricción de integridad referencial
     FOREIGN KEY (ClienteId) REFERENCES Clientes(Id) ON DELETE CASCADE
 );
@@ -40,7 +42,6 @@ CREATE TABLE DetallesPedido (
     PedidoId INT NOT NULL, -- Clave Foránea hacia el Ticket/Pedido
     PizzaId INT NOT NULL,  -- Clave Foránea hacia el Menú/Pizza
     Cantidad INT NOT NULL DEFAULT 1,
-    
     -- Restricciones de integridad referencial
     FOREIGN KEY (PedidoId) REFERENCES Pedidos(Id) ON DELETE CASCADE,
     FOREIGN KEY (PizzaId) REFERENCES Pizzas(Id) ON DELETE CASCADE

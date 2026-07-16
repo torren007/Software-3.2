@@ -8,7 +8,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURACIÓN DE LA BASE DE DATOS (Abstracción)
-var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;Password=Trigg3rs!;";
+var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;Password=Trigg3rs;";
 
 // Inyectamos el DbContext usando Pomelo para interactuar de forma abstracta en C#
 builder.Services.AddDbContext<PizzeriaDb>(options => 
@@ -34,35 +34,49 @@ app.MapGet("/pedidos", async (PizzeriaDb db) =>
 );
 
 // POST: Crear un nuevo pedido e integrar comunicación por Sockets
-app.MapPost("/pedidos", async (Pedido nuevo, PizzeriaDb db) => 
+// POST: Ahora recibe un "PedidoDTO dto", NO un "Pedido nuevo"
+app.MapPost("/pedidos", async (PedidoDTO dto, PizzeriaDb db) => 
 {
     try 
     {
-        // Lógica de negocio inicial
-        nuevo.ActorAsignado = "Cocina";
-        nuevo.Estado = "Espera de confirmación"; 
-        nuevo.Activo = true;
+        // 1. Busca si el cliente ya existe en la BD. Si no, crea uno nuevo.
+        var cliente = await db.Clientes.FirstOrDefaultAsync(c => c.Nombre == dto.ClienteNombre)
+                      ?? new Cliente { Nombre = dto.ClienteNombre, Direccion = dto.ClienteDireccion };
+
+        // 2. Busca si la pizza existe en el menú. Si no, la crea.
+        var pizza = await db.Pizzas.FirstOrDefaultAsync(p => p.Variedad == dto.PizzaVariedad)
+                    ?? new Pizza { Variedad = dto.PizzaVariedad, Precio = dto.PizzaPrecio };
+
+        // 3. Arma el pedido relacional conectando las tablas
+        var nuevo = new Pedido
+        {
+            Cliente = cliente,
+            ActorAsignado = "Cocina",
+            Estado = "Espera de confirmación",
+            Activo = true,
+            Detalles = new List<DetallePedido> {
+                new DetallePedido { Pizza = pizza, Cantidad = dto.Cantidad }
+            }
+        };
         
+        // El ORM guarda todo automáticamente en las 4 tablas con sus Claves Foráneas
         db.Pedidos.Add(nuevo);
         await db.SaveChangesAsync();
 
-        Console.WriteLine($"[API] Pedido #{nuevo.Id} registrado en BD. Conectando a CocinaApp...");
+        Console.WriteLine($"[API] Pedido #{nuevo.Id} registrado en BD. Notificando a cocina...");
 
-        // Bloque de Programación Distribuida (Socket TCP al puerto 5050)
+        // Enviar Socket a la cocina
         try
         {
-            using var tcpClient = new TcpClient("127.0.0.1", 5050);
+            using var tcpClient = new System.Net.Sockets.TcpClient("127.0.0.1", 5050);
             using var stream = tcpClient.GetStream();
-            var mensaje = Encoding.UTF8.GetBytes($"NUEVO_PEDIDO:{nuevo.Id}");
-            
+            var mensaje = System.Text.Encoding.UTF8.GetBytes($"NUEVO_PEDIDO:{nuevo.Id}");
             await stream.WriteAsync(mensaje);
-            Console.WriteLine("[API] Socket enviado con éxito.");
         }
-        catch (SocketException ex)
+        catch (System.Net.Sockets.SocketException ex)
         {
-            // Tratamiento de fallos en la red (Actividad 4)
-            Console.WriteLine($"[ALERTA] Pedido creado, pero la Cocina está desconectada. Detalle: {ex.Message}");
-            nuevo.Estado = "Error de conexión (Cocina apagada)";
+            Console.WriteLine($"[ALERTA] Cocina desconectada: {ex.Message}");
+            nuevo.Estado = "Error de red interno (Cocina no responde)";
             await db.SaveChangesAsync();
         }
 
@@ -70,9 +84,8 @@ app.MapPost("/pedidos", async (Pedido nuevo, PizzeriaDb db) =>
     }
     catch (Exception ex)
     {
-        // Captura de fallos de base de datos o mapeo interno (Error 500 controlado)
-        Console.WriteLine($"[ERROR FATAL EN API] {ex.Message}");
-        return Results.Problem("Error interno al procesar la comanda de la pizza.");
+        Console.WriteLine($"[ERROR FATAL] {ex.Message}");
+        return Results.Problem("Error interno del servidor.");
     }
 });
 
