@@ -14,7 +14,6 @@ var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;P
 builder.Services.AddDbContext<PizzeriaDb>(options => 
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Filtro de excepciones en entorno de desarrollo (consigna del PDF)
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -28,13 +27,11 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// GET: Listar pedidos activos mediante LINQ (sin escribir comandos SQL)
 app.MapGet("/pedidos", async (PizzeriaDb db) => 
     await db.Pedidos.Where(p => p.Activo).ToListAsync()
 );
 
 // POST: Crear un nuevo pedido e integrar comunicación por Sockets
-// POST: Ahora recibe un "PedidoDTO dto", NO un "Pedido nuevo"
 app.MapPost("/pedidos", async (PedidoDTO dto, PizzeriaDb db) => 
 {
     try 
