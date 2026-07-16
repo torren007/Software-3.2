@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/et12alumno/Imágenes/Software-3.2/CocinaApp/CocinaApp.csproj",
+      "projectUniqueName": "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj",
       "projectName": "CocinaApp",
-      "projectPath": "/home/et12alumno/Imágenes/Software-3.2/CocinaApp/CocinaApp.csproj",
+      "projectPath": "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj",
       "packagesPath": "/home/et12alumno/.nuget/packages/",
-      "outputPath": "/home/et12alumno/Imágenes/Software-3.2/CocinaApp/obj/",
+      "outputPath": "/mnt/Datos/Repos/Software-3.2/CocinaApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/et12alumno/.nuget/NuGet/NuGet.Config"

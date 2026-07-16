@@ -8,7 +8,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // CONFIGURACIÓN DE LA BASE DE DATOS (Abstracción)
-var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;Password=Trigg3rs;";
+var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;Password=Trigg3rs!;";
 
 // Inyectamos el DbContext usando Pomelo para interactuar de forma abstracta en C#
 builder.Services.AddDbContext<PizzeriaDb>(options => 

@@ -1,14 +1,16 @@
+using System.Text.Json.Serialization; // <-- NUEVO: Necesario para usar JsonIgnore
+
 namespace PizzeriaBackend.Models;
 
 public class DetallePedido
 {
     public int Id { get; set; }
     
-    // Relación con el Pedido
     public int PedidoId { get; set; }
+    
+    [JsonIgnore]
     public Pedido? Pedido { get; set; }
     
-    // Relación con la Pizza
     public int PizzaId { get; set; }
     public Pizza? Pizza { get; set; }
     
