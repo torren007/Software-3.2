@@ -42,7 +42,6 @@ namespace Torren3.Controllers
                 }
 
                 // 2. Creamos (o buscamos) el Cliente
-                // Nota: Asumo que tu clase Cliente tiene propiedades 'Nombre' y 'Direccion'. 
                 var cliente = new Cliente 
                 {
                     Nombre = pedidoNuevo.ClienteNombre,

@@ -1,6 +1,5 @@
 @model IEnumerable<Torren3.Models.Pizza>
 @{
-    // Utilizamos el _Layout.cshtml compartido para mantener el menú y footer consistentes
     ViewData["Title"] = "Inicio";
 }
 
@@ -26,7 +25,6 @@
         {
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <!-- Las imágenes deben guardarse en la carpeta wwwroot/img/ -->
                     <img src="@pizza.ImagenUrl" class="card-img-top" alt="Foto de @pizza.Nombre">
                     <div class="card-body">
                         <h3 class="card-title h5">@pizza.Nombre</h3>
