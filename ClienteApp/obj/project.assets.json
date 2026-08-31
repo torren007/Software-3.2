@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/mnt/Datos/Repos/Software-3.2/ClienteApp/ClienteApp.csproj",
+      "projectUniqueName": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/ClienteApp/ClienteApp.csproj",
       "projectName": "ClienteApp",
-      "projectPath": "/mnt/Datos/Repos/Software-3.2/ClienteApp/ClienteApp.csproj",
+      "projectPath": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/ClienteApp/ClienteApp.csproj",
       "packagesPath": "/home/et12alumno/.nuget/packages/",
-      "outputPath": "/mnt/Datos/Repos/Software-3.2/ClienteApp/obj/",
+      "outputPath": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/ClienteApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/et12alumno/.nuget/NuGet/NuGet.Config"

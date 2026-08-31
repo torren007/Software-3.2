@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj": {}
+    "/home/et12alumno/Escritorio/cafeteria/Software-3.2/CocinaApp/CocinaApp.csproj": {}
   },
   "projects": {
-    "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj": {
+    "/home/et12alumno/Escritorio/cafeteria/Software-3.2/CocinaApp/CocinaApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj",
+        "projectUniqueName": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/CocinaApp/CocinaApp.csproj",
         "projectName": "CocinaApp",
-        "projectPath": "/mnt/Datos/Repos/Software-3.2/CocinaApp/CocinaApp.csproj",
+        "projectPath": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/CocinaApp/CocinaApp.csproj",
         "packagesPath": "/home/et12alumno/.nuget/packages/",
-        "outputPath": "/mnt/Datos/Repos/Software-3.2/CocinaApp/obj/",
+        "outputPath": "/home/et12alumno/Escritorio/cafeteria/Software-3.2/CocinaApp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/et12alumno/.nuget/NuGet/NuGet.Config"
