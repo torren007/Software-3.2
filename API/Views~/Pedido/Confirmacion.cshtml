@@ -1,0 +1,17 @@
+@model PizzeriaBackend.Models.PedidoDTO
+@{
+    ViewData["Title"] = "Pedido Confirmado";
+}
+
+<div class="container mt-5 text-center">
+    <h1 class="text-success">¡Gracias, @Model.ClienteNombre!</h1>
+    
+    <div class="alert alert-info mt-4">
+        <h4>Tu pedido ha sido recibido con éxito.</h4>
+        <p>Enviaremos <strong>@Model.Cantidad</strong> pizza(s) de <strong>@Model.PizzaVariedad</strong> a la dirección: <strong>@Model.ClienteDireccion</strong>.</p>
+        
+        <p class="fs-5">El total a abonar es de: <strong>$@( (Model.Cantidad * Model.PizzaPrecio).ToString("N2") )</strong>.</p>
+    </div>
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Volver al Inicio</a>
+</div>
