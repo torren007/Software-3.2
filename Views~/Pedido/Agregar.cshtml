@@ -1,0 +1,44 @@
+@model Torren3.API.PedidoDTO
+@{
+    ViewData["Title"] = "Completar Pedido";
+}
+
+<div class="container mt-5">
+    <h2>Detalles de tu Pedido</h2>
+    <hr />
+    
+    <!-- El Tag Helper asp-action="Agregar" y method="post" redirigen los datos al método [HttpPost] del controlador[cite: 5] -->
+    <form asp-controller="Pedido" asp-action="Agregar" method="post" class="mt-4">
+        
+        <!-- Campo oculto para mantener el ID de la pizza seleccionada -->
+        <input type="hidden" asp-for="PizzaId" />
+
+        <div class="mb-3">
+            <label asp-for="NombreCliente" class="form-label">Nombre y Apellido:</label>
+            <input asp-for="NombreCliente" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Direccion" class="form-label">Dirección de Envío:</label>
+            <input asp-for="Direccion" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Telefono" class="form-label">Teléfono de Contacto:</label>
+            <input asp-for="Telefono" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Cantidad" class="form-label">Cantidad de Pizzas:</label>
+            <select asp-for="Cantidad" class="form-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4 o más</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg">Confirmar Pedido</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
+    </form>
+</div>
