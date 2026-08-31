@@ -7,6 +7,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. INYECCIÓN DEL SERVICIO MVC (Ubicado correctamente)
+builder.Services.AddControllersWithViews();
+
 // CONFIGURACIÓN DE LA BASE DE DATOS (Abstracción)
 var connectionString = "Server=localhost;Database=5to_PizzeriaDB;User=5to_agbd;Password=Trigg3rs!;";
 
@@ -27,6 +30,15 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
+// 2. MIDDLEWARES NECESARIOS PARA MVC
+app.UseStaticFiles(); // Habilita el uso de la carpeta wwwroot (CSS, JS, Imágenes)
+app.UseRouting();     // Habilita el enrutamiento de la aplicación
+app.UseAuthorization(); 
+
+// ----------------------------------------------------------------------
+// TUS ENDPOINTS DE API MINIMAL Y SOCKETS 
+// (Se mantienen intactos y conviven perfectamente con MVC)
+// ----------------------------------------------------------------------
 app.MapGet("/pedidos", async (PizzeriaDb db) => 
     await db.Pedidos.Where(p => p.Activo).ToListAsync()
 );
@@ -110,5 +122,11 @@ app.MapDelete("/pedidos/{id}", async (int id, PizzeriaDb db) =>
 
     return Results.NotFound();
 });
+
+// 3. MAPEO DE RUTAS PARA LOS CONTROLADORES MVC
+// Intercepta las solicitudes que no coinciden con los MapGet/Post superiores
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
