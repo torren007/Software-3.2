@@ -1,78 +1,111 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PizzeriaBackend.Models;
 using PizzeriaBackend.Data;
-using PizzeriaBackend.Models; // Tu namespace real
+using System.Net.Sockets;
+using System.Text;
 
-namespace Torren3.Controllers
+namespace PizzeriaBackend.Controllers
 {
     public class PedidoController : Controller
     {
         private readonly PizzeriaDb _db;
 
+        // Inyección del DbContext existente de Entity Framework
         public PedidoController(PizzeriaDb db)
         {
             _db = db;
         }
 
-        // Verbo GET: Preparamos el formulario con los datos de la pizza seleccionada.
+        // GET: /Pedido/Agregar (Muestra el formulario HTML)
         [HttpGet]
-        public IActionResult Agregar(string variedad, decimal precio) 
+        public IActionResult Agregar()
         {
-            var pedido = new PedidoDTO 
-            { 
-                PizzaVariedad = variedad,
-                PizzaPrecio = precio,
-                Cantidad = 1 
-            };
-            return View(pedido);
+            return View();
         }
 
-        // Verbo POST: Guardamos el pedido real.
+        // POST: /Pedido/Agregar (Procesa el formulario HTML y dispara sockets)
         [HttpPost]
-        public IActionResult Agregar(PedidoDTO pedidoNuevo)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Agregar(PedidoDTO dto)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                // 1. Buscamos la Pizza en la base de datos para obtener su Id real
-                var pizza = _db.Pizzas.FirstOrDefault(p => p.Variedad == pedidoNuevo.PizzaVariedad);
-                
-                if (pizza == null) 
-                {
-                    ModelState.AddModelError("", "La pizza seleccionada no existe.");
-                    return View(pedidoNuevo);
-                }
+                return View(dto);
+            }
 
-                // 2. Creamos (o buscamos) el Cliente
-                var cliente = new Cliente 
-                {
-                    Nombre = pedidoNuevo.ClienteNombre,
-                    Direccion = pedidoNuevo.ClienteDireccion
-                };
+            try
+            {
+                // 1. Reutilización de la lógica relacional del repositorio:
+                // Busca o crea el cliente
+                var cliente = await _db.Clientes.FirstOrDefaultAsync(c => c.Nombre == dto.ClienteNombre)
+                              ?? new Cliente { Nombre = dto.ClienteNombre, Direccion = dto.ClienteDireccion };
 
-                // 3. Armamos la entidad Pedido relacional
-                var entidadPedido = new Pedido
+                // Busca o crea la pizza en el menú
+                var pizza = await _db.Pizzas.FirstOrDefaultAsync(p => p.Variedad == dto.PizzaVariedad)
+                            ?? new Pizza { Variedad = dto.PizzaVariedad, Precio = dto.PizzaPrecio };
+
+                // Construcción de la entidad relacional con sus Foreign Keys
+                var nuevoPedido = new Pedido
                 {
-                    Cliente = cliente,            // Entity Framework insertará el cliente automáticamente
-                    Estado = "Pendiente",         // Estado inicial
+                    Cliente = cliente,
+                    ActorAsignado = "Cocina",
+                    Estado = "Espera de confirmación",
                     Activo = true,
                     Detalles = new List<DetallePedido>
                     {
-                        new DetallePedido 
-                        {
-                            // Nota: Asumo que DetallePedido tiene 'PizzaId' y 'Cantidad'
-                            PizzaId = pizza.Id, 
-                            Cantidad = pedidoNuevo.Cantidad
-                        }
+                        new DetallePedido { Pizza = pizza, Cantidad = dto.Cantidad }
                     }
                 };
 
-                // 4. Guardamos todo el "árbol" de objetos en la base de datos
-                _db.Pedidos.Add(entidadPedido);
-                _db.SaveChanges();
+                // Guardado atómico en la base de datos MySQL
+                _db.Pedidos.Add(nuevoPedido);
+                await _db.SaveChangesAsync();
 
-                return View("Confirmacion", pedidoNuevo);
+                Console.WriteLine($"[WEB-MVC] Pedido #{nuevoPedido.Id} creado desde HTML. Enviando socket a Cocina...");
+
+                // 2. Disparo por Socket TCP hacia CocinaApp (puerto 5050)
+                try
+                {
+                    using var tcpClient = new TcpClient("127.0.0.1", 5050);
+                    using var stream = tcpClient.GetStream();
+                    byte[] mensaje = Encoding.UTF8.GetBytes($"NUEVO_PEDIDO:{nuevoPedido.Id}");
+                    await stream.WriteAsync(mensaje, 0, mensaje.Length);
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine($"[ALERTA] Cocina no conectada en puerto 5050: {ex.Message}");
+                    nuevoPedido.Estado = "Error de red interno (Cocina no responde)";
+                    await _db.SaveChangesAsync();
+                }
+
+                // Redirecciona a la vista de confirmación pasando el ID generado
+                return RedirectToAction(nameof(Confirmacion), new { id = nuevoPedido.Id });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR EN PEDIDO] {ex.Message}");
+                ModelState.AddModelError(string.Empty, "Ocurrió un fallo registrando el pedido en la base de datos.");
+                return View(dto);
+            }
+        }
+
+        // GET: /Pedido/Confirmacion/5 (Comprobante y seguimiento de estado)
+        [HttpGet]
+        public async Task<IActionResult> Confirmacion(int id)
+        {
+            var pedido = await _db.Pedidos
+                .Include(p => p.Cliente)
+                .Include(p => p.Detalles)
+                    .ThenInclude(d => d.Pizza)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null)
+            {
+                return NotFound();
             }
 
-            return View(pedidoNuevo);
+            return View(pedido);
         }
     }
 }

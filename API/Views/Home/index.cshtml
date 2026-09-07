@@ -1,7 +1,17 @@
 @model IEnumerable<Torren3.Models.Pizza>
 @{
-    ViewData["Title"] = "Inicio";
+    ViewData["Title"] = "Pizzería";
 }
+
+<div class="text-center mt-5">
+    <h1 class="display-4">🍕 Sistema de Gestión de Pizzería</h1>
+    <p class="lead">Plataforma distribuida con persistencia relacional MySQL y sincronización TCP Sockets.</p>
+    <hr class="my-4">
+    <div class="d-flex justify-content-center gap-3">
+        <a class="btn btn-danger btn-lg px-4" href="/Pedido/Agregar">Pedir Pizza (Formulario HTML)</a>
+        <a class="btn btn-outline-dark btn-lg px-4" href="/pedidos" target="_blank">Ver Pedidos (API JSON)</a>
+    </div>
+</div>
 
 <!-- Sección Hero (Banner Principal) -->
 <section class="hero text-center py-5 bg-dark text-white">

@@ -1,44 +1,70 @@
 @model PizzeriaBackend.Models.PedidoDTO
+
 @{
-    ViewData["Title"] = "Completar Pedido";
+    ViewData["Title"] = "Pedir Pizza";
 }
 
-<div class="container mt-5">
-    <h2>Detalles de tu Pedido</h2>
-    <hr />
-    
-    <!-- El Tag Helper asp-action="Agregar" y method="post" redirigen los datos al método [HttpPost] del controlador[cite: 5] -->
-    <form asp-controller="Pedido" asp-action="Agregar" method="post" class="mt-4">
-        
-        <!-- Campo oculto para mantener el ID de la pizza seleccionada -->
-        <input type="hidden" asp-for="PizzaId" />
-
-        <div class="mb-3">
-            <label asp-for="NombreCliente" class="form-label">Nombre y Apellido:</label>
-            <input asp-for="NombreCliente" class="form-control" required />
+<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">🍕 Realizar Pedido de Pizza</h4>
         </div>
+        <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                </div>
+            }
 
-        <div class="mb-3">
-            <label asp-for="Direccion" class="form-label">Dirección de Envío:</label>
-            <input asp-for="Direccion" class="form-control" required />
+            <form asp-action="Agregar" asp-controller="Pedido" method="post" id="formPedido">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Nombre del Cliente</label>
+                    <input type="text" name="ClienteNombre" class="form-control" placeholder="Ej: Juan Pérez" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Dirección de Entrega</label>
+                    <input type="text" name="ClienteDireccion" class="form-control" placeholder="Ej: Av. Rivadavia 1234" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Variedad de Pizza</label>
+                    <select id="selectPizza" name="PizzaVariedad" class="form-select" required onchange="actualizarPrecio()">
+                        <option value="Muzzarella Grande" data-precio="8500">Muzzarella Grande - $8.500</option>
+                        <option value="Fugazzeta Rellena" data-precio="11000">Fugazzeta Rellena - $11.000</option>
+                        <option value="Napolitana Especial" data-precio="9800">Napolitana Especial - $9.800</option>
+                        <option value="Calabresa" data-precio="10500">Calabresa - $10.500</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label font-weight-bold">Cantidad</label>
+                        <input type="number" name="Cantidad" class="form-control" value="1" min="1" max="20" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label font-weight-bold">Precio Unitario ($)</label>
+                        <input type="number" step="0.01" id="inputPrecio" name="PizzaPrecio" class="form-control bg-light" value="8500" readonly required />
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <button type="submit" class="btn btn-danger btn-lg">Enviar Pedido a Cocina</button>
+                    <a href="/" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Telefono" class="form-label">Teléfono de Contacto:</label>
-            <input asp-for="Telefono" class="form-control" required />
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Cantidad" class="form-label">Cantidad de Pizzas:</label>
-            <select asp-for="Cantidad" class="form-select">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4 o más</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-success btn-lg">Confirmar Pedido</button>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg">Cancelar</a>
-    </form>
+    </div>
 </div>
+
+<script>
+    function actualizarPrecio() {
+        const select = document.getElementById("selectPizza");
+        const opcionSeleccionada = select.options[select.selectedIndex];
+        const precio = opcionSeleccionada.getAttribute("data-precio");
+        document.getElementById("inputPrecio").value = precio;
+    }
+</script>
