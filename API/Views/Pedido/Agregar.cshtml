@@ -1,70 +1,490 @@
-@model PizzeriaBackend.Models.PedidoDTO
-
+@* Si tu controlador pasa una lista de pizzas o usa un modelo específico, puedes descomentar y ajustar tu @model *@
 @{
-    ViewData["Title"] = "Pedir Pizza";
+    ViewData["Title"] = "Realizar Pedido de Pizza";
 }
 
-<div class="container mt-4" style="max-width: 600px;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-danger text-white">
-            <h4 class="mb-0">🍕 Realizar Pedido de Pizza</h4>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Pizzería</title>
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* === PALETA INVERNAL / TONOS FRÍOS Y OPACOS === */
+        :root {
+            --invierno-oscuro: #243447;      /* Azul pizarra noche */
+            --invierno-primario: #3b536b;    /* Azul acero apagado */
+            --invierno-acento: #547799;      /* Azul niebla */
+            --invierno-borde: #c5d4e2;       /* Borde glacial suave */
+            --invierno-fondo: #f1f5f9;       /* Fondo hielo muy claro */
+            --invierno-superficie: #ffffff;  /* Blanco puro para tarjetas */
+            --invierno-texto: #1e293b;       /* Gris pizarra oscuro para texto */
+            --invierno-texto-suave: #5a7184; /* Azul grisáceo atenuado */
+        }
+
+        body {
+            background-color: var(--invierno-fondo);
+            color: var(--invierno-texto);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Encabezado */
+        .header-invernal {
+            background: linear-gradient(135deg, var(--invierno-oscuro) 0%, var(--invierno-primario) 100%);
+            color: #ffffff;
+            padding: 2.5rem 1rem;
+            border-bottom: 3px solid var(--invierno-borde);
+            box-shadow: 0 4px 15px rgba(36, 52, 71, 0.08);
+        }
+
+        .header-invernal h1 {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* Tarjetas de Pizza */
+        .pizza-card {
+            background: var(--invierno-superficie);
+            border: 1px solid var(--invierno-borde);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pizza-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--invierno-acento);
+            box-shadow: 0 10px 22px rgba(43, 68, 94, 0.12);
+        }
+
+        .pizza-img-container {
+            height: 175px;
+            overflow: hidden;
+            position: relative;
+            background-color: #e2e8f0;
+        }
+
+        .pizza-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .pizza-card:hover .pizza-img {
+            transform: scale(1.05);
+        }
+
+        .badge-precio {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(36, 52, 71, 0.85);
+            color: #ffffff;
+            backdrop-filter: blur(4px);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Controles de Selección y Cantidad */
+        .qty-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--invierno-borde);
+            border-radius: 10px;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .btn-qty {
+            background: none;
+            border: none;
+            color: var(--invierno-primario);
+            font-size: 1.1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .btn-qty:hover {
+            background-color: #e2eaf1;
+            color: var(--invierno-oscuro);
+        }
+
+        .qty-input {
+            width: 45px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--invierno-oscuro);
+        }
+
+        /* Panel lateral de pedido */
+        .resumen-card {
+            background: var(--invierno-superficie);
+            border: 1px solid var(--invierno-borde);
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(36, 52, 71, 0.05);
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .resumen-header {
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--invierno-borde);
+            padding: 1rem 1.25rem;
+            border-radius: 14px 14px 0 0;
+            color: var(--invierno-oscuro);
+            font-weight: 600;
+        }
+
+        /* Formularios */
+        .form-control, .form-select {
+            border: 1px solid var(--invierno-borde);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            color: var(--invierno-texto);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--invierno-acento);
+            box-shadow: 0 0 0 0.2rem rgba(84, 119, 153, 0.2);
+        }
+
+        /* Botón de envío */
+        .btn-invernal {
+            background-color: var(--invierno-primario);
+            color: #ffffff;
+            font-weight: 600;
+            border: none;
+            border-radius: 9px;
+            padding: 0.8rem 1.5rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-invernal:hover {
+            background-color: var(--invierno-oscuro);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .btn-invernal:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera -->
+    <header class="header-invernal mb-5">
+        <div class="container text-center">
+            <h1 class="display-6"><i class="bi bi-snow me-2"></i> Pizzería Artesanal</h1>
+            <p class="mb-0 opacity-75">Selecciona tus pizzas favoritas y completa los datos para recibir tu orden en minutos.</p>
         </div>
-        <div class="card-body">
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <div class="alert alert-danger">
-                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    </header>
+
+    <div class="container mb-5">
+        <!-- Formulario principal apuntando al controlador -->
+        <form asp-controller="Pedido" asp-action="Agregar" method="post" id="formPedido">
+            <div class="row g-4">
+                
+                <!-- COLUMNA IZQUIERDA: Catálogo de Pizzas -->
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0 text-secondary-emphasis">
+                            <i class="bi bi-grid-fill text-muted me-2"></i>Nuestras Variedades
+                        </h4>
+                        <span class="text-muted small">Haz clic en <strong>+</strong> para sumar al pedido</span>
+                    </div>
+
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+
+                        <!-- Pizza 1: Muzzarella Clásica -->
+                        <div class="col">
+                            <div class="pizza-card" data-id="1" data-nombre="Pizza Muzzarella" data-precio="5500">
+                                <div class="pizza-img-container">
+                                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" alt="Muzzarella" class="pizza-img" loading="lazy">
+                                    <span class="badge-precio">$5.500</span>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <h5 class="fw-bold mb-1">Muzzarella Clásica</h5>
+                                    <p class="small text-muted mb-3 flex-grow-1">Salsa de tomate casera, abundante queso muzzarella fundido, orégano y aceitunas negras.</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <div class="qty-box">
+                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
+                                            <input type="number" name="Cantidades[1]" class="qty-input" value="0" min="0" max="20" readonly>
+                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
+                                            <i class="bi bi-cart-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pizza 2: Napolitana -->
+                        <div class="col">
+                            <div class="pizza-card" data-id="2" data-nombre="Pizza Napolitana" data-precio="6200">
+                                <div class="pizza-img-container">
+                                    <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80" alt="Napolitana" class="pizza-img" loading="lazy">
+                                    <span class="badge-precio">$6.200</span>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <h5 class="fw-bold mb-1">Napolitana Especial</h5>
+                                    <p class="small text-muted mb-3 flex-grow-1">Muzzarella premium, rodajas de tomate natural seleccionados, toque de ajo fresco y albahaca.</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <div class="qty-box">
+                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
+                                            <input type="number" name="Cantidades[2]" class="qty-input" value="0" min="0" max="20" readonly>
+                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
+                                            <i class="bi bi-cart-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pizza 3: Fugazzeta -->
+                        <div class="col">
+                            <div class="pizza-card" data-id="3" data-nombre="Pizza Fugazzeta" data-precio="6400">
+                                <div class="pizza-img-container">
+                                    <img src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80" alt="Fugazzeta" class="pizza-img" loading="lazy">
+                                    <span class="badge-precio">$6.400</span>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <h5 class="fw-bold mb-1">Fugazzeta Rellena</h5>
+                                    <p class="small text-muted mb-3 flex-grow-1">Cebolla dorada crocante al orégano, doble capa de muzzarella y toque de pimienta blanca.</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <div class="qty-box">
+                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
+                                            <input type="number" name="Cantidades[3]" class="qty-input" value="0" min="0" max="20" readonly>
+                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
+                                            <i class="bi bi-cart-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pizza 4: Calabresa / Pepperoni -->
+                        <div class="col">
+                            <div class="pizza-card" data-id="4" data-nombre="Pizza Calabresa" data-precio="6800">
+                                <div class="pizza-img-container">
+                                    <img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80" alt="Calabresa" class="pizza-img" loading="lazy">
+                                    <span class="badge-precio">$6.800</span>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <h5 class="fw-bold mb-1">Calabresa Picante</h5>
+                                    <p class="small text-muted mb-3 flex-grow-1">Rodajas de longaniza calabresa artesanal curada, ají molido y base de queso muzzarella suave.</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <div class="qty-box">
+                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
+                                            <input type="number" name="Cantidades[4]" class="qty-input" value="0" min="0" max="20" readonly>
+                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
+                                            <i class="bi bi-cart-plus me-1"></i>Añadir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+
+                <!-- COLUMNA DERECHA: Datos del Cliente y Resumen -->
+                <div class="col-lg-4">
+                    <div class="resumen-card">
+                        
+                        <div class="resumen-header">
+                            <i class="bi bi-receipt me-2"></i>Tu Orden
+                        </div>
+
+                        <div class="p-3">
+                            <!-- Lista dinámica de items seleccionados -->
+                            <div id="contenedorItemsPedido" class="mb-3">
+                                <p class="text-muted small text-center my-3" id="textoPedidoVacio">
+                                    <i class="bi bi-basket3 display-6 d-block mb-1 text-secondary opacity-50"></i>
+                                    Aún no has seleccionado ninguna pizza.
+                                </p>
+                                <ul class="list-group list-group-flush small" id="listaResumen"></ul>
+                            </div>
+
+                            <hr class="text-secondary opacity-25">
+
+                            <!-- Total -->
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-semibold">Total a pagar:</span>
+                                <span class="h4 mb-0 fw-bold text-primary-emphasis" id="totalTexto">$0</span>
+                            </div>
+
+                            <!-- Campos del Formulario de Cliente (Compatibles con tu Base de Datos y Modelo) -->
+                            <h6 class="fw-bold mt-4 mb-3 text-secondary-emphasis">
+                                <i class="bi bi-person-lines-fill me-1"></i> Datos de Entrega
+                            </h6>
+
+                            <div class="mb-3">
+                                <label for="NombreCliente" class="form-label small fw-semibold">Nombre Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control form-control-sm" id="NombreCliente" name="NombreCliente" placeholder="Ej: Rubén Gómez" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Telefono" class="form-label small fw-semibold">Teléfono de Contacto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" class="form-control form-control-sm" id="Telefono" name="Telefono" placeholder="Ej: 11 4455-6677" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Direccion" class="form-label small fw-semibold">Dirección de Entrega</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-geo-alt"></i></span>
+                                    <input type="text" class="form-control form-control-sm" id="Direccion" name="Direccion" placeholder="Calle, Número, Depto" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="Observaciones" class="form-label small fw-semibold">Notas o Aclaraciones</label>
+                                <textarea class="form-control form-control-sm" id="Observaciones" name="Observaciones" rows="2" placeholder="Ej: Timbre B, sin cebolla, etc."></textarea>
+                            </div>
+
+                            <!-- Botón de Confirmar Pedido -->
+                            <button type="submit" class="btn btn-invernal w-100 shadow-sm mt-2" id="btnEnviar">
+                                <i class="bi bi-check-circle me-2"></i> Confirmar Pedido
+                            </button>
+
+                            <div class="text-center mt-2">
+                                <small class="text-muted"><i class="bi bi-clock-history me-1"></i> Tiempo estimado: 30-45 min</small>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Script de interacción dinámica -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.pizza-card');
+            const listaResumen = document.getElementById('listaResumen');
+            const textoVacio = document.getElementById('textoPedidoVacio');
+            const totalTexto = document.getElementById('totalTexto');
+            const formPedido = document.getElementById('formPedido');
+
+            function actualizarResumen() {
+                listaResumen.innerHTML = '';
+                let total = 0;
+                let hayItems = false;
+
+                cards.forEach(card => {
+                    const id = card.getAttribute('data-id');
+                    const nombre = card.getAttribute('data-nombre');
+                    const precio = parseFloat(card.getAttribute('data-precio'));
+                    const input = card.querySelector('.qty-input');
+                    const cantidad = parseInt(input.value) || 0;
+
+                    if (cantidad > 0) {
+                        hayItems = true;
+                        const subtotal = precio * cantidad;
+                        total += subtotal;
+
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent';
+                        li.innerHTML = `
+                            <div>
+                                <span class="fw-semibold">${nombre}</span>
+                                <div class="text-muted small">${cantidad} x $${precio.toLocaleString('es-AR')}</div>
+                            </div>
+                            <span class="fw-bold text-dark">$${subtotal.toLocaleString('es-AR')}</span>
+                        `;
+                        listaResumen.appendChild(li);
+                    }
+                });
+
+                if (hayItems) {
+                    textoVacio.classList.add('d-none');
+                } else {
+                    textoVacio.classList.remove('d-none');
+                }
+
+                totalTexto.textContent = '$' + total.toLocaleString('es-AR');
             }
 
-            <form asp-action="Agregar" asp-controller="Pedido" method="post" id="formPedido">
-                @Html.AntiForgeryToken()
+            // Manejo de botones + y -
+            cards.forEach(card => {
+                const input = card.querySelector('.qty-input');
+                const btnSumar = card.querySelector('.btn-sumar');
+                const btnRestar = card.querySelector('.btn-restar');
+                const btnAgregar = card.querySelector('.btn-agregar-directo');
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-bold">Nombre del Cliente</label>
-                    <input type="text" name="ClienteNombre" class="form-control" placeholder="Ej: Juan Pérez" required />
-                </div>
+                btnSumar.addEventListener('click', () => {
+                    input.value = parseInt(input.value) + 1;
+                    actualizarResumen();
+                });
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-bold">Dirección de Entrega</label>
-                    <input type="text" name="ClienteDireccion" class="form-control" placeholder="Ej: Av. Rivadavia 1234" required />
-                </div>
+                btnRestar.addEventListener('click', () => {
+                    if (parseInt(input.value) > 0) {
+                        input.value = parseInt(input.value) - 1;
+                        actualizarResumen();
+                    }
+                });
 
-                <div class="mb-3">
-                    <label class="form-label font-weight-bold">Variedad de Pizza</label>
-                    <select id="selectPizza" name="PizzaVariedad" class="form-select" required onchange="actualizarPrecio()">
-                        <option value="Muzzarella Grande" data-precio="8500">Muzzarella Grande - $8.500</option>
-                        <option value="Fugazzeta Rellena" data-precio="11000">Fugazzeta Rellena - $11.000</option>
-                        <option value="Napolitana Especial" data-precio="9800">Napolitana Especial - $9.800</option>
-                        <option value="Calabresa" data-precio="10500">Calabresa - $10.500</option>
-                    </select>
-                </div>
+                btnAgregar.addEventListener('click', () => {
+                    input.value = parseInt(input.value) + 1;
+                    actualizarResumen();
+                });
+            });
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label font-weight-bold">Cantidad</label>
-                        <input type="number" name="Cantidad" class="form-control" value="1" min="1" max="20" required />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label font-weight-bold">Precio Unitario ($)</label>
-                        <input type="number" step="0.01" id="inputPrecio" name="PizzaPrecio" class="form-control bg-light" value="8500" readonly required />
-                    </div>
-                </div>
+            // Validación antes del envío
+            formPedido.addEventListener('submit', (e) => {
+                let totalCantidad = 0;
+                document.querySelectorAll('.qty-input').forEach(i => totalCantidad += parseInt(i.value) || 0);
 
-                <div class="d-grid gap-2 mt-3">
-                    <button type="submit" class="btn btn-danger btn-lg">Enviar Pedido a Cocina</button>
-                    <a href="/" class="btn btn-outline-secondary">Cancelar</a>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-    function actualizarPrecio() {
-        const select = document.getElementById("selectPizza");
-        const opcionSeleccionada = select.options[select.selectedIndex];
-        const precio = opcionSeleccionada.getAttribute("data-precio");
-        document.getElementById("inputPrecio").value = precio;
-    }
-</script>
+                if (totalCantidad === 0) {
+                    e.preventDefault();
+                    alert('Por favor, selecciona al menos una pizza para realizar el pedido.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
