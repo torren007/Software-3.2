@@ -1,4 +1,4 @@
-@* Si tu controlador pasa una lista de pizzas o usa un modelo específico, puedes descomentar y ajustar tu @model *@
+@* Archivo: API/Views/Pedido/Agregar.cshtml *@
 @{
     ViewData["Title"] = "Realizar Pedido de Pizza";
 }
@@ -20,14 +20,15 @@
     <style>
         /* === PALETA INVERNAL / TONOS FRÍOS Y OPACOS === */
         :root {
-            --invierno-oscuro: #243447;      /* Azul pizarra noche */
-            --invierno-primario: #3b536b;    /* Azul acero apagado */
-            --invierno-acento: #547799;      /* Azul niebla */
-            --invierno-borde: #c5d4e2;       /* Borde glacial suave */
-            --invierno-fondo: #f1f5f9;       /* Fondo hielo muy claro */
-            --invierno-superficie: #ffffff;  /* Blanco puro para tarjetas */
-            --invierno-texto: #1e293b;       /* Gris pizarra oscuro para texto */
-            --invierno-texto-suave: #5a7184; /* Azul grisáceo atenuado */
+            --invierno-oscuro: #1e2d3d;      /* Azul pizarra noche */
+            --invierno-primario: #3a506b;    /* Azul acero apagado */
+            --invierno-acento: #5b7a9c;      /* Azul niebla invernal */
+            --invierno-borde: #c9d6df;       /* Gris glacial suave */
+            --invierno-fondo: #edf2f7;       /* Fondo hielo muy claro */
+            --invierno-superficie: #ffffff;  /* Superficie limpia */
+            --invierno-texto: #1f2937;       /* Pizarra texto */
+            --invierno-texto-muted: #5c6b73; /* Azul grisáceo atenuado */
+            --invierno-activo-bg: #e8eef5;   /* Fondo selección activa */
         }
 
         body {
@@ -41,9 +42,9 @@
         .header-invernal {
             background: linear-gradient(135deg, var(--invierno-oscuro) 0%, var(--invierno-primario) 100%);
             color: #ffffff;
-            padding: 2.5rem 1rem;
+            padding: 2.2rem 1rem;
             border-bottom: 3px solid var(--invierno-borde);
-            box-shadow: 0 4px 15px rgba(36, 52, 71, 0.08);
+            box-shadow: 0 4px 16px rgba(30, 45, 61, 0.08);
         }
 
         .header-invernal h1 {
@@ -54,26 +55,53 @@
         /* Tarjetas de Pizza */
         .pizza-card {
             background: var(--invierno-superficie);
-            border: 1px solid var(--invierno-borde);
+            border: 2px solid var(--invierno-borde);
             border-radius: 14px;
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .pizza-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-3px);
             border-color: var(--invierno-acento);
-            box-shadow: 0 10px 22px rgba(43, 68, 94, 0.12);
+            box-shadow: 0 8px 20px rgba(58, 80, 107, 0.12);
+        }
+
+        /* Estado Seleccionado */
+        .pizza-card.seleccionada {
+            border-color: var(--invierno-primario);
+            background-color: var(--invierno-activo-bg);
+            box-shadow: 0 0 0 3px rgba(58, 80, 107, 0.25);
+        }
+
+        .pizza-card.seleccionada .badge-seleccion {
+            display: block !important;
+        }
+
+        .badge-seleccion {
+            display: none;
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background-color: var(--invierno-primario);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            z-index: 2;
         }
 
         .pizza-img-container {
-            height: 175px;
+            height: 165px;
             overflow: hidden;
             position: relative;
-            background-color: #e2e8f0;
+            background-color: #cbd5e1;
         }
 
         .pizza-img {
@@ -84,61 +112,22 @@
         }
 
         .pizza-card:hover .pizza-img {
-            transform: scale(1.05);
+            transform: scale(1.04);
         }
 
         .badge-precio {
             position: absolute;
             top: 12px;
             right: 12px;
-            background-color: rgba(36, 52, 71, 0.85);
+            background-color: rgba(30, 45, 61, 0.85);
             color: #ffffff;
             backdrop-filter: blur(4px);
             font-weight: 600;
             font-size: 0.9rem;
-            padding: 0.4rem 0.8rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        /* Controles de Selección y Cantidad */
-        .qty-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background-color: #f8fafc;
-            border: 1px solid var(--invierno-borde);
-            border-radius: 10px;
-            padding: 0.25rem 0.5rem;
-        }
-
-        .btn-qty {
-            background: none;
-            border: none;
-            color: var(--invierno-primario);
-            font-size: 1.1rem;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.15s;
-        }
-
-        .btn-qty:hover {
-            background-color: #e2eaf1;
-            color: var(--invierno-oscuro);
-        }
-
-        .qty-input {
-            width: 45px;
-            text-align: center;
-            border: none;
-            background: transparent;
-            font-weight: 600;
-            color: var(--invierno-oscuro);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 2;
         }
 
         /* Panel lateral de pedido */
@@ -146,7 +135,7 @@
             background: var(--invierno-superficie);
             border: 1px solid var(--invierno-borde);
             border-radius: 14px;
-            box-shadow: 0 4px 14px rgba(36, 52, 71, 0.05);
+            box-shadow: 0 6px 18px rgba(30, 45, 61, 0.06);
             position: sticky;
             top: 1.5rem;
         }
@@ -160,17 +149,53 @@
             font-weight: 600;
         }
 
-        /* Formularios */
+        /* Formulario y Controles */
         .form-control, .form-select {
             border: 1px solid var(--invierno-borde);
             border-radius: 8px;
-            padding: 0.65rem 0.9rem;
+            padding: 0.6rem 0.85rem;
             color: var(--invierno-texto);
         }
 
         .form-control:focus, .form-select:focus {
             border-color: var(--invierno-acento);
-            box-shadow: 0 0 0 0.2rem rgba(84, 119, 153, 0.2);
+            box-shadow: 0 0 0 0.2rem rgba(91, 122, 156, 0.2);
+        }
+
+        .qty-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--invierno-borde);
+            border-radius: 8px;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        .btn-qty {
+            background: #f1f5f9;
+            border: none;
+            color: var(--invierno-primario);
+            font-size: 1.2rem;
+            width: 42px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .btn-qty:hover {
+            background-color: #e2eaf1;
+            color: var(--invierno-oscuro);
+        }
+
+        .qty-input {
+            width: 55px;
+            text-align: center;
+            border: none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--invierno-oscuro);
         }
 
         /* Botón de envío */
@@ -179,7 +204,7 @@
             color: #ffffff;
             font-weight: 600;
             border: none;
-            border-radius: 9px;
+            border-radius: 8px;
             padding: 0.8rem 1.5rem;
             transition: background-color 0.2s, transform 0.1s;
         }
@@ -189,59 +214,56 @@
             color: #ffffff;
             transform: translateY(-1px);
         }
-
-        .btn-invernal:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
 
     <!-- Cabecera -->
-    <header class="header-invernal mb-5">
+    <header class="header-invernal mb-4">
         <div class="container text-center">
-            <h1 class="display-6"><i class="bi bi-snow me-2"></i> Pizzería Artesanal</h1>
-            <p class="mb-0 opacity-75">Selecciona tus pizzas favoritas y completa los datos para recibir tu orden en minutos.</p>
+            <h1 class="display-6 mb-1"><i class="bi bi-snow me-2"></i> Pizzería Artesanal</h1>
+            <p class="mb-0 opacity-75">Selecciona la pizza deseada, indica la cantidad y completa tus datos de envío.</p>
         </div>
     </header>
 
     <div class="container mb-5">
-        <!-- Formulario principal apuntando al controlador -->
+        <!-- Formulario POST hacia PedidoController -->
         <form asp-controller="Pedido" asp-action="Agregar" method="post" id="formPedido">
+            
+            <!-- Token Antifalsificación obligatorio para ASP.NET Core -->
+            @Html.AntiForgeryToken()
+
+            <!-- Campos ocultos de vinculación estricta con PedidoDTO / Model Binding -->
+            <input type="hidden" id="IdPizza" name="IdPizza" value="1" />
+            <input type="hidden" id="idPizza_alt" name="idPizza" value="1" />
+            <input type="hidden" id="PizzaId" name="PizzaId" value="1" />
+            <input type="hidden" id="Nombre" name="Nombre" value="" />
+            <input type="hidden" id="Cliente" name="Cliente" value="" />
+
             <div class="row g-4">
                 
-                <!-- COLUMNA IZQUIERDA: Catálogo de Pizzas -->
+                <!-- COLUMNA IZQUIERDA: Selección de Pizzas -->
                 <div class="col-lg-8">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold mb-0 text-secondary-emphasis">
-                            <i class="bi bi-grid-fill text-muted me-2"></i>Nuestras Variedades
-                        </h4>
-                        <span class="text-muted small">Haz clic en <strong>+</strong> para sumar al pedido</span>
+                        <h5 class="fw-bold mb-0 text-secondary-emphasis">
+                            <i class="bi bi-grid-3x3-gap-fill text-muted me-2"></i>1. Selecciona tu variedad
+                        </h5>
+                        <span class="text-muted small">Haz clic sobre la pizza que quieras ordenar</span>
                     </div>
 
                     <div class="row row-cols-1 row-cols-md-2 g-3">
 
-                        <!-- Pizza 1: Muzzarella Clásica -->
+                        <!-- Pizza 1: Muzzarella (Seleccionada por defecto) -->
                         <div class="col">
-                            <div class="pizza-card" data-id="1" data-nombre="Pizza Muzzarella" data-precio="5500">
+                            <div class="pizza-card seleccionada" data-id="1" data-nombre="Pizza Muzzarella" data-precio="5500">
+                                <span class="badge-seleccion"><i class="bi bi-check-circle-fill me-1"></i>Seleccionada</span>
                                 <div class="pizza-img-container">
                                     <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" alt="Muzzarella" class="pizza-img" loading="lazy">
                                     <span class="badge-precio">$5.500</span>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
                                     <h5 class="fw-bold mb-1">Muzzarella Clásica</h5>
-                                    <p class="small text-muted mb-3 flex-grow-1">Salsa de tomate casera, abundante queso muzzarella fundido, orégano y aceitunas negras.</p>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mt-auto">
-                                        <div class="qty-box">
-                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
-                                            <input type="number" name="Cantidades[1]" class="qty-input" value="0" min="0" max="20" readonly>
-                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
-                                            <i class="bi bi-cart-plus me-1"></i>Añadir
-                                        </button>
-                                    </div>
+                                    <p class="small text-muted mb-0">Salsa de tomate casera, abundante queso muzzarella fundido, orégano y aceitunas negras.</p>
                                 </div>
                             </div>
                         </div>
@@ -249,24 +271,14 @@
                         <!-- Pizza 2: Napolitana -->
                         <div class="col">
                             <div class="pizza-card" data-id="2" data-nombre="Pizza Napolitana" data-precio="6200">
+                                <span class="badge-seleccion"><i class="bi bi-check-circle-fill me-1"></i>Seleccionada</span>
                                 <div class="pizza-img-container">
                                     <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80" alt="Napolitana" class="pizza-img" loading="lazy">
                                     <span class="badge-precio">$6.200</span>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
                                     <h5 class="fw-bold mb-1">Napolitana Especial</h5>
-                                    <p class="small text-muted mb-3 flex-grow-1">Muzzarella premium, rodajas de tomate natural seleccionados, toque de ajo fresco y albahaca.</p>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mt-auto">
-                                        <div class="qty-box">
-                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
-                                            <input type="number" name="Cantidades[2]" class="qty-input" value="0" min="0" max="20" readonly>
-                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
-                                            <i class="bi bi-cart-plus me-1"></i>Añadir
-                                        </button>
-                                    </div>
+                                    <p class="small text-muted mb-0">Muzzarella premium, rodajas de tomate natural seleccionados, toque de ajo fresco y albahaca.</p>
                                 </div>
                             </div>
                         </div>
@@ -274,49 +286,29 @@
                         <!-- Pizza 3: Fugazzeta -->
                         <div class="col">
                             <div class="pizza-card" data-id="3" data-nombre="Pizza Fugazzeta" data-precio="6400">
+                                <span class="badge-seleccion"><i class="bi bi-check-circle-fill me-1"></i>Seleccionada</span>
                                 <div class="pizza-img-container">
                                     <img src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80" alt="Fugazzeta" class="pizza-img" loading="lazy">
                                     <span class="badge-precio">$6.400</span>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
                                     <h5 class="fw-bold mb-1">Fugazzeta Rellena</h5>
-                                    <p class="small text-muted mb-3 flex-grow-1">Cebolla dorada crocante al orégano, doble capa de muzzarella y toque de pimienta blanca.</p>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mt-auto">
-                                        <div class="qty-box">
-                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
-                                            <input type="number" name="Cantidades[3]" class="qty-input" value="0" min="0" max="20" readonly>
-                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
-                                            <i class="bi bi-cart-plus me-1"></i>Añadir
-                                        </button>
-                                    </div>
+                                    <p class="small text-muted mb-0">Cebolla dorada crocante al orégano, doble capa de muzzarella y toque de pimienta blanca.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pizza 4: Calabresa / Pepperoni -->
+                        <!-- Pizza 4: Calabresa -->
                         <div class="col">
                             <div class="pizza-card" data-id="4" data-nombre="Pizza Calabresa" data-precio="6800">
+                                <span class="badge-seleccion"><i class="bi bi-check-circle-fill me-1"></i>Seleccionada</span>
                                 <div class="pizza-img-container">
                                     <img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80" alt="Calabresa" class="pizza-img" loading="lazy">
                                     <span class="badge-precio">$6.800</span>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
                                     <h5 class="fw-bold mb-1">Calabresa Picante</h5>
-                                    <p class="small text-muted mb-3 flex-grow-1">Rodajas de longaniza calabresa artesanal curada, ají molido y base de queso muzzarella suave.</p>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mt-auto">
-                                        <div class="qty-box">
-                                            <button type="button" class="btn-qty btn-restar" aria-label="Restar"><i class="bi bi-dash"></i></button>
-                                            <input type="number" name="Cantidades[4]" class="qty-input" value="0" min="0" max="20" readonly>
-                                            <button type="button" class="btn-qty btn-sumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-agregar-directo">
-                                            <i class="bi bi-cart-plus me-1"></i>Añadir
-                                        </button>
-                                    </div>
+                                    <p class="small text-muted mb-0">Rodajas de longaniza calabresa curada, ají molido y base de queso muzzarella suave.</p>
                                 </div>
                             </div>
                         </div>
@@ -324,73 +316,80 @@
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: Datos del Cliente y Resumen -->
+                <!-- COLUMNA DERECHA: Resumen y Formulario de Envío -->
                 <div class="col-lg-4">
                     <div class="resumen-card">
                         
                         <div class="resumen-header">
-                            <i class="bi bi-receipt me-2"></i>Tu Orden
+                            <i class="bi bi-receipt me-2"></i>2. Detalle del Pedido
                         </div>
 
                         <div class="p-3">
-                            <!-- Lista dinámica de items seleccionados -->
-                            <div id="contenedorItemsPedido" class="mb-3">
-                                <p class="text-muted small text-center my-3" id="textoPedidoVacio">
-                                    <i class="bi bi-basket3 display-6 d-block mb-1 text-secondary opacity-50"></i>
-                                    Aún no has seleccionado ninguna pizza.
-                                </p>
-                                <ul class="list-group list-group-flush small" id="listaResumen"></ul>
+                            <!-- Resumen dinámico -->
+                            <div class="card bg-light border-0 p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-semibold text-truncate me-2" id="resumenPizzaNombre">Pizza Muzzarella</span>
+                                    <span class="badge bg-secondary" id="resumenPrecioUnitario">$5.500 c/u</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <label class="small fw-semibold text-muted">Cantidad:</label>
+                                    <div class="qty-box">
+                                        <button type="button" class="btn-qty" id="btnRestar" aria-label="Restar"><i class="bi bi-dash"></i></button>
+                                        <input type="number" id="Cantidad" name="Cantidad" class="qty-input" value="1" min="1" max="20" required>
+                                        <button type="button" class="btn-qty" id="btnSumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
 
-                            <hr class="text-secondary opacity-25">
-
-                            <!-- Total -->
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="fw-semibold">Total a pagar:</span>
-                                <span class="h4 mb-0 fw-bold text-primary-emphasis" id="totalTexto">$0</span>
+                            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                                <span class="fw-bold text-secondary">Total a pagar:</span>
+                                <span class="h4 mb-0 fw-bold text-dark" id="totalTexto">$5.500</span>
                             </div>
 
-                            <!-- Campos del Formulario de Cliente (Compatibles con tu Base de Datos y Modelo) -->
-                            <h6 class="fw-bold mt-4 mb-3 text-secondary-emphasis">
-                                <i class="bi bi-person-lines-fill me-1"></i> Datos de Entrega
+                            <hr class="text-secondary opacity-25 my-3">
+
+                            <!-- Formulario de Entrega -->
+                            <h6 class="fw-bold mb-3 text-secondary-emphasis">
+                                <i class="bi bi-geo-alt-fill me-1"></i>3. Datos de Entrega
                             </h6>
 
                             <div class="mb-3">
                                 <label for="NombreCliente" class="form-label small fw-semibold">Nombre Completo</label>
-                                <div class="input-group">
+                                <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
-                                    <input type="text" class="form-control form-control-sm" id="NombreCliente" name="NombreCliente" placeholder="Ej: Rubén Gómez" required>
+                                    <input type="text" class="form-control" id="NombreCliente" name="NombreCliente" placeholder="Ej: Rubén Gómez" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="Telefono" class="form-label small fw-semibold">Teléfono de Contacto</label>
-                                <div class="input-group">
+                                <div class="input-group input-group-sm">
                                     <span class="input-group-text bg-light text-secondary"><i class="bi bi-telephone"></i></span>
-                                    <input type="tel" class="form-control form-control-sm" id="Telefono" name="Telefono" placeholder="Ej: 11 4455-6677" required>
+                                    <input type="tel" class="form-control" id="Telefono" name="Telefono" placeholder="Ej: 11 4455-6677" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="Direccion" class="form-label small fw-semibold">Dirección de Entrega</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-geo-alt"></i></span>
-                                    <input type="text" class="form-control form-control-sm" id="Direccion" name="Direccion" placeholder="Calle, Número, Depto" required>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light text-secondary"><i class="bi bi-house"></i></span>
+                                    <input type="text" class="form-control" id="Direccion" name="Direccion" placeholder="Calle, Número, Depto" required>
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="Observaciones" class="form-label small fw-semibold">Notas o Aclaraciones</label>
-                                <textarea class="form-control form-control-sm" id="Observaciones" name="Observaciones" rows="2" placeholder="Ej: Timbre B, sin cebolla, etc."></textarea>
+                                <label for="Observaciones" class="form-label small fw-semibold">Observaciones (Opcional)</label>
+                                <textarea class="form-control form-control-sm" id="Observaciones" name="Observaciones" rows="2" placeholder="Ej: Timbre B, sin aceitunas..."></textarea>
                             </div>
 
-                            <!-- Botón de Confirmar Pedido -->
+                            <!-- Botón Submit -->
                             <button type="submit" class="btn btn-invernal w-100 shadow-sm mt-2" id="btnEnviar">
-                                <i class="bi bi-check-circle me-2"></i> Confirmar Pedido
+                                <i class="bi bi-check2-circle me-1"></i> Confirmar Pedido
                             </button>
 
                             <div class="text-center mt-2">
-                                <small class="text-muted"><i class="bi bi-clock-history me-1"></i> Tiempo estimado: 30-45 min</small>
+                                <small class="text-muted"><i class="bi bi-stopwatch me-1"></i> Demora aproximada: 35 min</small>
                             </div>
                         </div>
 
@@ -401,89 +400,87 @@
         </form>
     </div>
 
-    <!-- Script de interacción dinámica -->
+    <!-- Script de interacción y sincronización de datos -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.pizza-card');
-            const listaResumen = document.getElementById('listaResumen');
-            const textoVacio = document.getElementById('textoPedidoVacio');
+            const inputIdPizza = document.getElementById('IdPizza');
+            const inputIdPizzaAlt = document.getElementById('idPizza_alt');
+            const inputPizzaId = document.getElementById('PizzaId');
+            const inputCantidad = document.getElementById('Cantidad');
+            const btnSumar = document.getElementById('btnSumar');
+            const btnRestar = document.getElementById('btnRestar');
+
+            const resumenNombre = document.getElementById('resumenPizzaNombre');
+            const resumenPrecioUnitario = document.getElementById('resumenPrecioUnitario');
             const totalTexto = document.getElementById('totalTexto');
-            const formPedido = document.getElementById('formPedido');
 
-            function actualizarResumen() {
-                listaResumen.innerHTML = '';
-                let total = 0;
-                let hayItems = false;
+            const inputNombreCliente = document.getElementById('NombreCliente');
+            const hiddenNombre = document.getElementById('Nombre');
+            const hiddenCliente = document.getElementById('Cliente');
 
-                cards.forEach(card => {
-                    const id = card.getAttribute('data-id');
-                    const nombre = card.getAttribute('data-nombre');
-                    const precio = parseFloat(card.getAttribute('data-precio'));
-                    const input = card.querySelector('.qty-input');
-                    const cantidad = parseInt(input.value) || 0;
+            let pizzaSeleccionada = {
+                id: 1,
+                nombre: 'Pizza Muzzarella',
+                precio: 5500
+            };
 
-                    if (cantidad > 0) {
-                        hayItems = true;
-                        const subtotal = precio * cantidad;
-                        total += subtotal;
+            function actualizarTotales() {
+                const cantidad = Math.max(1, parseInt(inputCantidad.value) || 1);
+                inputCantidad.value = cantidad;
 
-                        const li = document.createElement('li');
-                        li.className = 'list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent';
-                        li.innerHTML = `
-                            <div>
-                                <span class="fw-semibold">${nombre}</span>
-                                <div class="text-muted small">${cantidad} x $${precio.toLocaleString('es-AR')}</div>
-                            </div>
-                            <span class="fw-bold text-dark">$${subtotal.toLocaleString('es-AR')}</span>
-                        `;
-                        listaResumen.appendChild(li);
-                    }
-                });
+                // Actualizar identificadores para el controlador
+                inputIdPizza.value = pizzaSeleccionada.id;
+                inputIdPizzaAlt.value = pizzaSeleccionada.id;
+                inputPizzaId.value = pizzaSeleccionada.id;
 
-                if (hayItems) {
-                    textoVacio.classList.add('d-none');
-                } else {
-                    textoVacio.classList.remove('d-none');
-                }
+                // Actualizar interfaz
+                resumenNombre.textContent = pizzaSeleccionada.nombre;
+                resumenPrecioUnitario.textContent = '$' + pizzaSeleccionada.precio.toLocaleString('es-AR') + ' c/u';
 
+                const total = pizzaSeleccionada.precio * cantidad;
                 totalTexto.textContent = '$' + total.toLocaleString('es-AR');
             }
 
-            // Manejo de botones + y -
+            // Selección visual de tarjetas
             cards.forEach(card => {
-                const input = card.querySelector('.qty-input');
-                const btnSumar = card.querySelector('.btn-sumar');
-                const btnRestar = card.querySelector('.btn-restar');
-                const btnAgregar = card.querySelector('.btn-agregar-directo');
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('seleccionada'));
+                    card.classList.add('seleccionada');
 
-                btnSumar.addEventListener('click', () => {
-                    input.value = parseInt(input.value) + 1;
-                    actualizarResumen();
-                });
+                    pizzaSeleccionada.id = parseInt(card.getAttribute('data-id'));
+                    pizzaSeleccionada.nombre = card.getAttribute('data-nombre');
+                    pizzaSeleccionada.precio = parseFloat(card.getAttribute('data-precio'));
 
-                btnRestar.addEventListener('click', () => {
-                    if (parseInt(input.value) > 0) {
-                        input.value = parseInt(input.value) - 1;
-                        actualizarResumen();
-                    }
-                });
-
-                btnAgregar.addEventListener('click', () => {
-                    input.value = parseInt(input.value) + 1;
-                    actualizarResumen();
+                    actualizarTotales();
                 });
             });
 
-            // Validación antes del envío
-            formPedido.addEventListener('submit', (e) => {
-                let totalCantidad = 0;
-                document.querySelectorAll('.qty-input').forEach(i => totalCantidad += parseInt(i.value) || 0);
+            // Controles de cantidad (+ y -)
+            btnSumar.addEventListener('click', () => {
+                inputCantidad.value = parseInt(inputCantidad.value || 1) + 1;
+                actualizarTotales();
+            });
 
-                if (totalCantidad === 0) {
-                    e.preventDefault();
-                    alert('Por favor, selecciona al menos una pizza para realizar el pedido.');
+            btnRestar.addEventListener('click', () => {
+                const actual = parseInt(inputCantidad.value || 1);
+                if (actual > 1) {
+                    inputCantidad.value = actual - 1;
+                    actualizarTotales();
                 }
             });
+
+            inputCantidad.addEventListener('change', actualizarTotales);
+
+            // Sincronizar nombres alternativos antes del envío
+            document.getElementById('formPedido').addEventListener('submit', () => {
+                const nombreValor = inputNombreCliente.value.trim();
+                hiddenNombre.value = nombreValor;
+                hiddenCliente.value = nombreValor;
+            });
+
+            // Inicializar totales
+            actualizarTotales();
         });
     </script>
 </body>
