@@ -1,51 +1,185 @@
-@model IEnumerable<Torren3.Models.Pizza>
+@model IEnumerable<PizzeriaBackend.Models.Pizza>
 @{
-    ViewData["Title"] = "Pizzería";
+    ViewData["Title"] = "Menú Principal - Pizzería Torren";
 }
 
-<div class="text-center mt-5">
-    <h1 class="display-4">🍕 Sistema de Gestión de Pizzería</h1>
-    <p class="lead">Plataforma distribuida con persistencia relacional MySQL y sincronización TCP Sockets.</p>
-    <hr class="my-4">
-    <div class="d-flex justify-content-center gap-3">
-        <a class="btn btn-danger btn-lg px-4" href="/Pedido/Agregar">Pedir Pizza (Formulario HTML)</a>
-        <a class="btn btn-outline-dark btn-lg px-4" href="/pedidos" target="_blank">Ver Pedidos (API JSON)</a>
+<!-- Importación de tipografías: 'Caveat' (Handwriting) y 'JetBrains Mono' (Monospace) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    /* PALETA: Azules fríos y opacos combinados con acentos cálidos */
+    :root {
+        --bg-main: #141d26;            /* Azul pizarra muy oscuro y frío */
+        --blue-card: #1f2d3d;          /* Azul marino opaco */
+        --blue-card-border: #2c3e50;   /* Borde azul neutro */
+        --blue-accent: #415b76;        /* Azul frío intermedio */
+        --warm-gold: #e59866;          /* Tono cálido corteza/horno */
+        --warm-gold-hover: #d35400;    /* Tono cálido intenso */
+        --text-primary: #ecf0f1;       /* Blanco frío */
+        --text-muted: #95a5a6;          /* Gris azulado tenue */
+        
+        --font-handwriting: 'Caveat', cursive, sans-serif;
+        --font-mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+    }
+
+    /* Tipografías especiales */
+    .title-handwriting {
+        font-family: var(--font-handwriting);
+        letter-spacing: 1px;
+    }
+
+    .font-monospace-custom {
+        font-family: var(--font-mono);
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+        background: linear-gradient(135deg, #1b2838 0%, #243447 100%);
+        border: 1px solid var(--blue-card-border);
+        border-radius: 12px;
+    }
+
+    /* Tarjetas de Pizza */
+    .pizza-card {
+        background-color: var(--blue-card);
+        border: 1px solid var(--blue-card-border);
+        border-radius: 12px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        overflow: hidden;
+    }
+
+    .pizza-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
+        border-color: var(--warm-gold);
+    }
+
+    /* Control responsivo y uniforme de las imágenes */
+    .pizza-img-container {
+        height: 220px;
+        width: 100%;
+        overflow: hidden;
+        background-color: #0d131a;
+    }
+
+    .pizza-img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .pizza-card:hover .pizza-img {
+        transform: scale(1.05);
+    }
+
+    /* Botones personalizados */
+    .btn-warm {
+        background-color: var(--warm-gold);
+        color: #141d26;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        border: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-warm:hover {
+        background-color: var(--warm-gold-hover);
+        color: #ffffff;
+    }
+
+    .btn-cold-outline {
+        border: 1px solid var(--blue-accent);
+        color: #cbd5e1;
+        font-family: var(--font-mono);
+    }
+
+    .btn-cold-outline:hover {
+        background-color: var(--blue-accent);
+        color: #ffffff;
+    }
+
+    .price-tag {
+        color: var(--warm-gold);
+        font-weight: bold;
+    }
+</style>
+
+<div class="container py-4 font-monospace-custom">
+
+    <!-- Encabezado / Estado del Sistema -->
+    <div class="text-center my-4">
+        <h1 class="display-3 title-handwriting text-light">🍕 Sistema de Gestión de Pizzería</h1>
+        <p class="text-secondary small">Arquitectura distribuida · Persistencia MySQL · Sincronización TCP Sockets</p>
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <!-- Corregido a la acción correcta 'Agregar' -->
+            <a class="btn btn-warm px-4 py-2 shadow-sm rounded-pill" asp-controller="Pedido" asp-action="Agregar">
+                Comandar Pizza (Formulario)
+            </a>
+            <a class="btn btn-cold-outline px-4 py-2 rounded-pill" href="/pedidos" target="_blank">
+                Inspeccionar API (JSON)
+            </a>
+        </div>
     </div>
-</div>
 
-<!-- Sección Hero (Banner Principal) -->
-<section class="hero text-center py-5 bg-dark text-white">
-    <div class="container">
-        <h1 class="display-4">Bienvenido a Pizzería Torren</h1>
-        <p class="lead">Las mejores pizzas artesanales, listas para disfrutar.</p>
-        <!-- Tag Helper para redirigir al formulario de pedidos -->
-        <a asp-controller="Pedido" asp-action="Crear" class="btn btn-primary btn-lg mt-3">¡Pedir Ahora!</a>
-    </div>
-</section>
+    <!-- Sección Hero (Banner Principal) -->
+    <section class="hero-banner text-center p-5 my-5 shadow">
+        <div class="container py-2">
+            <h2 class="display-4 title-handwriting text-warning">Bienvenido a Pizzería Torren</h2>
+            <p class="lead text-light mb-4">Especialidades artesanales al horno, sincronizadas en tiempo real con nuestra cocina.</p>
+            <a asp-controller="Pedido" asp-action="Agregar" class="btn btn-warm btn-lg px-5 py-2 rounded-pill shadow">
+                ¡Pedir Ahora!
+            </a>
+        </div>
+    </section>
 
-<hr class="my-5">
+    <!-- Catálogo de Pizzas Dinámicas -->
+    <section class="productos my-5">
+        <h2 class="text-center display-5 title-handwriting mb-4 text-light">Nuestras Especialidades</h2>
+        
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var pizza in Model)
+                {
+                    <!-- Fallback automático en caso de que ImagenUrl venga nula o vacía -->
+                    var imagen = string.IsNullOrEmpty(pizza.ImagenUrl) 
+                        ? "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" 
+                        : pizza.ImagenUrl;
 
-<!-- Sección de Productos Dinámicos -->
-<section class="productos container">
-    <h2 class="text-center mb-4">Nuestras Especialidades</h2>
-    
-    <div class="row">
-        @* Iteramos sobre el modelo dinámico enviado por el controlador *@
-        @foreach (var pizza in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="@pizza.ImagenUrl" class="card-img-top" alt="Foto de @pizza.Nombre">
-                    <div class="card-body">
-                        <h3 class="card-title h5">@pizza.Nombre</h3>
-                        <p class="card-text text-muted">@pizza.Descripcion</p>
-                        <p class="card-text fw-bold fs-5">$@pizza.Precio.ToString("N2")</p>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 pizza-card shadow-sm">
+                            <div class="pizza-img-container">
+                                <img src="@imagen" class="pizza-img img-fluid" alt="Pizza @pizza.Nombre">
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h3 class="card-title title-handwriting h2 text-light mb-1">@pizza.Nombre</h3>
+                                <p class="card-text text-secondary small flex-grow-1">@pizza.Descripcion</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary">
+                                    <span class="fs-4 price-tag">$@pizza.Precio.ToString("N2")</span>
+                                    <a asp-controller="Pedido" asp-action="Agregar" asp-route-id="@pizza.Id" class="btn btn-sm btn-warm px-3 rounded-pill">
+                                        Ordenar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-footer bg-transparent border-0">
-                        <a asp-controller="Pedido" asp-action="Agregar" asp-route-id="@pizza.Id" class="btn btn-outline-success w-100">Agregar al Carrito</a>
-                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-muted py-5">
+                    <p>No se encontraron variedades cargadas en la base de datos.</p>
                 </div>
-            </div>
-        }
-    </div>
-</section>
+            }
+        </div>
+    </section>
+</div>
