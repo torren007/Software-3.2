@@ -1,3 +1,4 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "Pedido Confirmado";
 }
@@ -54,19 +55,40 @@
             margin-bottom: 1rem;
         }
 
-        .btn-volver {
-            background-color: #3b536b;
-            color: #ffffff;
+        .btn-pedido-nuevo {
+            background-color: #ffc107;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pedido-nuevo:hover {
+            background-color: #e0a800;
+            color: #000000;
+            transform: translateY(-1px);
+        }
+
+        .btn-volver-menu {
+            border: 1px solid #c5d4e2;
+            color: #475569;
+            background-color: #ffffff;
             border-radius: 8px;
             padding: 0.65rem 1.5rem;
             text-decoration: none;
             display: inline-block;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
 
-        .btn-volver:hover {
-            background-color: #243447;
-            color: #ffffff;
+        .btn-volver-menu:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            border-color: #94a3b8;
         }
     </style>
 </head>
@@ -99,19 +121,17 @@
                 Recibirás un mensaje de confirmación en breve. Te avisaremos cuando el repartidor vaya en camino.
             </p>
 
-            <a asp-controller="Home" asp-action="Index" class="btn-volver w-100">
-                <i class="bi bi-arrow-left me-1"></i> Volver al Inicio
-            </a>
-            <div class="d-grid gap-2 mt-4">
-        <!-- Redirige directamente al formulario para pedir otra pizza -->
-            <a asp-controller="Pedido" asp-action="Agregar" class="btn btn-warning btn-lg fw-bold shadow-sm">
-                🍕 Pedir otra pizza ahora
-            </a>
+            <div class="d-grid gap-2">
+                <!-- Acción 1: Pedir otra pizza (TagHelper puro) -->
+                <a asp-controller="Pedido" asp-action="Agregar" class="btn-pedido-nuevo shadow-sm">
+                    🍕 Pedir otra pizza ahora
+                </a>
 
-            <!-- Vuelve al catálogo interactivo del Index -->
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-                Volver al Menú Principal
-            </a>
+                <!-- Acción 2: Volver al menú principal (TagHelper puro) -->
+                <a asp-controller="Home" asp-action="Index" class="btn-volver-menu">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                </a>
+            </div>
         </div>
     </div>
 
