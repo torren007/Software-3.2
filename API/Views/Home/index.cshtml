@@ -1,176 +1,424 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @model IEnumerable<Torren3.Models.Pizza>
 @{
-    ViewData["Title"] = "Menú Principal - Pizzería Torren";
+    Layout = null;
+    ViewData["Title"] = "Pizzería Torren";
+    var pizzas = (Model ?? Enumerable.Empty<Torren3.Models.Pizza>()).ToList();
+    // Las rutas del repositorio apuntan a /img/...; las fotos reales están en /images/
+    string Img(Torren3.Models.Pizza p) => string.IsNullOrWhiteSpace(p.ImagenUrl) ? "" : p.ImagenUrl.Replace("/img/", "/images/").Replace("cuatroquesos", "cuatro-quesos");
+    var menu = pizzas.Select(p => new { id = p.Id, nombre = p.Nombre, descripcion = p.Descripcion, precio = p.Precio, imagen = Img(p) });
 }
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@ViewData["Title"]</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --bg-main: #141d26;
-        --blue-card: #1f2d3d;
-        --blue-card-border: #2c3e50;
-        --blue-accent: #415b76;
-        --warm-gold: #e59866;
-        --warm-gold-hover: #d35400;
-        --text-primary: #ecf0f1;
-        --text-muted: #95a5a6;
-        --font-handwriting: 'Caveat', cursive, sans-serif;
-        --font-mono: 'JetBrains Mono', Consolas, monospace;
-    }
+:root{--navy:#14212F;--navy2:#1E3145;--mist:#EEF2F6;--muted:#52657A;--salsa:#C8321F;--salsa-d:#A82817;--yema:#F0B23E;--albahaca:#2F7D4F;--line:#D3DCE6;--paper:#FAF8F2;--focus:#2A62C9;--f:'Bricolage Grotesque',system-ui,'Segoe UI',sans-serif;--m:'DM Mono',ui-monospace,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{font:400 1rem/1.6 var(--f);color:var(--navy);background:var(--mist)}
+img{display:block;max-width:100%}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.dark :focus-visible{outline-color:var(--yema)}
+.wrap{width:min(1120px,100% - 2.5rem);margin-inline:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.btn{font:600 1rem var(--f);border:0;border-radius:8px;padding:.8rem 1.4rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;transition:background .15s,transform .1s}
+.btn:active{transform:translateY(1px)}
+.btn.salsa{background:var(--salsa);color:#fff}.btn.salsa:hover{background:var(--salsa-d)}
+.btn.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px #5d7790}.btn.ghost:hover{background:var(--navy2)}
+.btn.line{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--line)}.btn.line:hover{background:var(--mist)}
+.btn[disabled]{opacity:.6;cursor:wait}
+svg.i{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-    body {
-        background-color: var(--bg-main);
-        color: var(--text-primary);
-        font-family: var(--font-mono);
-    }
+/* Cabecera */
+header.top{position:sticky;top:0;z-index:20;background:rgba(20,33,47,.94);backdrop-filter:blur(8px);color:#fff}
+header.top .wrap{display:flex;align-items:center;gap:1.5rem;min-height:4rem}
+.brand{font:800 1.3rem var(--f);letter-spacing:-.02em;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.5rem;margin-right:auto}
+nav.main{display:flex;gap:1.5rem}
+nav.main a{color:#c3d0dd;text-decoration:none;font-weight:600;font-size:.95rem}nav.main a:hover{color:#fff}
+header.top .btn{padding:.55rem 1rem;font-size:.92rem}
 
-    .title-handwriting {
-        font-family: var(--font-handwriting);
-        letter-spacing: 1px;
-    }
+/* Hero */
+.hero{background:var(--navy);color:#fff;padding:clamp(2.5rem,7vw,5.5rem) 0}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(2rem,6vw,5rem);align-items:center}
+.hero h1{font:800 clamp(2.6rem,6.2vw,4.9rem)/.98 var(--f);letter-spacing:-.035em;max-width:11ch}
+.hero p.lead{margin:1.4rem 0 1.8rem;font-size:1.15rem;color:#b7c6d6;max-width:46ch}
+.hero .acts{display:flex;flex-wrap:wrap;gap:.8rem}
+.hero small{display:flex;gap:.5rem;align-items:center;margin-top:1.6rem;color:#8fa3b8}
 
-    .font-monospace-custom {
-        font-family: var(--font-mono);
-    }
+/* Comanda (ticket en vivo) */
+.ticket-wrap{justify-self:center;width:min(100%,340px)}
+.ticket{background:var(--paper);color:#1b2733;font:400 .86rem/1.5 var(--m);padding:1.4rem 1.3rem 0;position:relative;transform:rotate(1.2deg);filter:drop-shadow(0 18px 28px rgba(0,0,0,.35));animation:print 1.6s steps(16) both}
+.ticket::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:10px;background:linear-gradient(-45deg,transparent 8px,var(--paper) 0),linear-gradient(45deg,transparent 8px,var(--paper) 0);background-size:16px 16px}
+.t-head{text-align:center;font:800 1.25rem var(--f);letter-spacing:-.01em}
+.t-head small{display:block;font:500 .78rem var(--m);color:#5a6a79;margin-top:.1rem}
+.t-rows{margin:1rem 0;border-block:1.5px dashed #9fb0c0;padding:.8rem 0}
+.t-rows div{display:flex;justify-content:space-between;gap:1rem;padding:.15rem 0}
+.t-rows dd{font-weight:500;text-align:right}
+.t-last{padding-bottom:1rem;color:#5a6a79}
+.t-stub{margin:0 -1.3rem;padding:1.1rem 1.3rem 1.6rem;border-top:2px dashed #9fb0c0;position:relative;background:var(--paper)}
+.t-stub::before,.t-stub::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--navy)}
+.t-stub::before{left:-8px}.t-stub::after{right:-8px}
+.t-stub .btn{width:100%;font-family:var(--f)}
+.off{color:var(--salsa);font-weight:500}
+@@keyframes print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 -20px 0)}}
 
-    .hero-banner {
-        background: linear-gradient(135deg, #1b2838 0%, #243447 100%);
-        border: 1px solid var(--blue-card-border);
-        border-radius: 12px;
-    }
+/* Secciones */
+section.sec{padding:clamp(3rem,7vw,5.5rem) 0}
+section.sec.white{background:#fff}
+h2{font:800 clamp(1.8rem,3.6vw,2.6rem)/1.1 var(--f);letter-spacing:-.025em}
+.sec-head{margin-bottom:2rem;max-width:56ch}.sec-head p{color:var(--muted);margin-top:.6rem}
 
-    .pizza-card {
-        background-color: var(--blue-card);
-        border: 1px solid var(--blue-card-border);
-        border-radius: 12px;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        overflow: hidden;
-    }
+/* Carta */
+.carta{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(1.5rem,5vw,4rem);align-items:start}
+.carta ul{list-style:none;padding:0}
+.row{display:flex;gap:.5rem;align-items:stretch;border-bottom:1.5px solid var(--line)}
+.pick{flex:1;display:flex;gap:1rem;align-items:center;text-align:left;font:inherit;color:inherit;background:none;border:0;padding:1.1rem .5rem;cursor:pointer;border-radius:6px}
+.pick:hover,.pick[aria-pressed=true]{background:#fff}
+.pick img{width:64px;height:64px;object-fit:cover;border-radius:8px;display:none;background:var(--line)}
+.pick .nm{display:flex;align-items:baseline;gap:.6rem}
+.pick .nm b{font:700 1.3rem var(--f);letter-spacing:-.01em}
+.pick .dots{flex:1;border-bottom:2px dotted #9fb0c0;transform:translateY(-.3rem);min-width:1rem}
+.pick .nm span.pr{font:700 1.2rem var(--f);font-variant-numeric:tabular-nums}
+.pick .tx{flex:1}.pick p{color:var(--muted);font-size:.95rem;margin-top:.15rem}
+.row .add{align-self:center;width:44px;height:44px;border-radius:50%;border:0;background:var(--salsa);color:#fff;cursor:pointer;display:grid;place-items:center}
+.row .add:hover{background:var(--salsa-d)}
+.visor{position:sticky;top:5.5rem;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 0 var(--line),0 12px 30px rgba(20,33,47,.1)}
+.visor .ph{aspect-ratio:4/3;background:var(--line);overflow:hidden}
+.visor img{width:100%;height:100%;object-fit:cover}
+.visor .bd{padding:1.3rem}
+.visor h3{font:800 1.6rem var(--f);letter-spacing:-.02em}
+.visor p{color:var(--muted);margin:.3rem 0 1rem}
+.visor .btn{width:100%}
 
-    .pizza-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.45);
-        border-color: var(--warm-gold);
-    }
+/* Cómo funciona */
+.pasos{list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;counter-reset:p}
+.pasos li{counter-increment:p;border-top:3px solid var(--navy);padding-top:1rem}
+.pasos li::before{content:counter(p);font:800 2.4rem/1 var(--f);color:var(--salsa);display:block;margin-bottom:.5rem}
+.pasos b{display:block;font-size:1.1rem;margin-bottom:.25rem}.pasos span{color:var(--muted);font-size:.95rem}
+.nota{margin-top:2rem;color:var(--muted);font-size:.92rem}.nota a{color:var(--navy);font-weight:600}
 
-    .pizza-img-container {
-        height: 220px;
-        width: 100%;
-        overflow: hidden;
-        background-color: #0d131a;
-    }
+/* Seguimiento */
+.seg{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(1.5rem,5vw,4rem);align-items:start}
+.buscar{display:flex;gap:.6rem;margin-top:1rem}
+input,.fld{font:inherit;color:var(--navy);border:1.5px solid #b5c3d1;border-radius:8px;padding:.7rem .85rem;width:100%;background:#fff}
+input:focus-visible{outline-offset:0;border-color:var(--focus)}
+.res{margin-top:1.2rem;min-height:3rem}
+.res .card{border:1.5px solid var(--line);border-radius:12px;padding:1.1rem;background:var(--mist)}
+.etapas{display:flex;gap:.5rem;margin:.9rem 0 .6rem}
+.etapas i{flex:1;height:6px;border-radius:3px;background:var(--line)}.etapas i.on{background:var(--albahaca)}.etapas i.err{background:var(--salsa)}
+.res a{color:var(--navy);font-weight:600}
+.tabla{width:100%;border-collapse:collapse}
+.tabla th{text-align:left;font-weight:600;color:var(--muted);font-size:.9rem;padding:.5rem .6rem;border-bottom:2px solid var(--navy)}
+.tabla td{padding:.7rem .6rem;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tabla td:last-child,.tabla th:last-child{text-align:right}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font-weight:600;font-size:.85rem;padding:.2rem .65rem;border-radius:99px}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.chip.w{background:#FCEBC8;color:#6b4a05}.chip.p{background:#D6EBDD;color:#1d5a37}.chip.e{background:#F6D5D0;color:#8e2415}
+.mini{font:600 .85rem var(--f);border:0;background:none;color:var(--salsa-d);cursor:pointer;padding:.3rem .5rem;border-radius:6px}.mini:hover{background:#F6D5D0}
+.vacio{padding:2rem 1rem;text-align:center;color:var(--muted)}
+.scroll{max-height:23rem;overflow:auto}
+.upd{font-size:.85rem;color:var(--muted);margin-top:.6rem}
 
-    .pizza-img {
-        height: 100%;
-        width: 100%;
-        object-fit: cover;
-        transition: transform 0.4s ease;
-    }
+/* Modal de pedido */
+dialog{border:0;border-radius:16px;padding:0;width:min(520px,100% - 1.5rem);max-height:calc(100dvh - 1.5rem);overflow:auto;color:var(--navy);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(10,18,28,.65)}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.4rem;border-bottom:1.5px solid var(--line)}
+.dh h2{font-size:1.4rem}
+.x{border:0;background:none;cursor:pointer;width:40px;height:40px;border-radius:50%;color:var(--navy)}.x:hover{background:var(--mist)}
+.db{padding:1.3rem 1.4rem 1.5rem;display:grid;gap:1.1rem}
+.opts{display:grid;gap:.5rem;border:0;padding:0}
+.opts legend,.lb{font-weight:600;font-size:.92rem;margin-bottom:.4rem;padding:0}
+.opt{display:flex;justify-content:space-between;gap:1rem;border:1.5px solid var(--line);border-radius:8px;padding:.65rem .85rem;cursor:pointer}
+.opt:has(input:checked){border-color:var(--navy);background:var(--mist);box-shadow:inset 0 0 0 1px var(--navy)}
+.opt:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:2px}
+.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.opt b{font-variant-numeric:tabular-nums}
+.cant{display:flex;justify-content:space-between;align-items:center}
+.qty{display:flex;align-items:center;border:1.5px solid #b5c3d1;border-radius:8px;overflow:hidden}
+.qty button{width:42px;height:40px;border:0;background:var(--mist);cursor:pointer;font-size:1.2rem;color:var(--navy)}.qty button:hover{background:var(--line)}
+.qty output{min-width:2.6rem;text-align:center;font-weight:800}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}.total b{font:800 1.8rem var(--f)}
+.err-msg{background:#F6D5D0;color:#8e2415;border-radius:8px;padding:.7rem .9rem;font-size:.92rem}
+.alt{font-size:.9rem;color:var(--muted);text-align:center}.alt a{color:var(--navy);font-weight:600}
+.ok{text-align:center;display:grid;gap:.9rem;justify-items:center}
+.ok .n{font:800 3rem/1 var(--f);color:var(--albahaca)}
+.ok .acts{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center}
 
-    .pizza-card:hover .pizza-img {
-        transform: scale(1.05);
-    }
+/* Pie y aviso */
+footer{background:var(--navy);color:#9db0c3;padding:2.2rem 0;font-size:.92rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between}
+footer a{color:#fff;margin-right:1.2rem}
+#toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);background:var(--navy);color:#fff;padding:.75rem 1.2rem;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+dialog + #toast{z-index:100}
 
-    .btn-warm {
-        background-color: var(--warm-gold);
-        color: #141d26;
-        font-family: var(--font-mono);
-        font-weight: 600;
-        border: none;
-        text-decoration: none;
-        transition: background-color 0.2s ease;
-    }
-
-    .btn-warm:hover {
-        background-color: var(--warm-gold-hover);
-        color: #ffffff;
-    }
-
-    .btn-cold-outline {
-        border: 1px solid var(--blue-accent);
-        color: #cbd5e1;
-        font-family: var(--font-mono);
-        text-decoration: none;
-    }
-
-    .btn-cold-outline:hover {
-        background-color: var(--blue-accent);
-        color: #ffffff;
-    }
-
-    .price-tag {
-        color: var(--warm-gold);
-        font-weight: bold;
-    }
+@@media (max-width:860px){
+  .hero .wrap,.carta,.seg{grid-template-columns:1fr}
+  .visor{display:none}.pick img{display:block}
+  .pasos{grid-template-columns:1fr 1fr}
+  nav.main{display:none}
+  .ticket-wrap{justify-self:start}
+}
+@@media (max-width:520px){.pasos{grid-template-columns:1fr}.buscar{flex-direction:column}}
+@@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
+</head>
+<body>
 
-<div class="container py-4 font-monospace-custom">
+<header class="top dark">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="Pizzería Torren, inicio">
+      <svg class="i" viewBox="0 0 24 24" style="width:1.5rem;height:1.5rem;stroke:var(--yema)"><path d="M12 21 3.5 6.5a17 17 0 0 1 17 0z"/><circle cx="10" cy="9.5" r="1"/><circle cx="14" cy="11" r="1"/><circle cx="12" cy="14.5" r="1"/></svg>
+      Pizzería Torren
+    </a>
+    <nav class="main" aria-label="Principal">
+      <a href="#carta">La carta</a><a href="#como">Cómo funciona</a><a href="#seguimiento">Seguimiento</a>
+    </nav>
+    <button class="btn salsa" type="button" data-order>Hacer pedido</button>
+  </div>
+</header>
 
-    <div class="text-center my-4">
-        <h1 class="display-3 title-handwriting text-light">🍕 Sistema de Gestión de Pizzería</h1>
-        <p class="text-secondary small">Arquitectura distribuida · Persistencia MySQL · Sincronización TCP Sockets</p>
-        <div class="d-flex justify-content-center gap-3 mt-3">
-            <a class="btn btn-warm px-4 py-2 shadow-sm rounded-pill" asp-controller="Pedido" asp-action="Agregar">
-                Comandar Pizza (Formulario)
-            </a>
-            <!-- Este enlace no tiene asp-*, por lo que href="/pedidos" es completamente válido -->
-            <a class="btn btn-cold-outline px-4 py-2 rounded-pill" href="/pedidos" target="_blank">
-                Inspeccionar API (JSON)
-            </a>
-        </div>
+<main id="inicio">
+<section class="hero dark">
+  <div class="wrap">
+    <div>
+      <h1>Pedí la pizza. Seguí la comanda.</h1>
+      <p class="lead">Elegís de la carta, la cocina recibe el pedido al instante y ves en qué estado está sin tener que llamar.</p>
+      <div class="acts">
+        <button class="btn salsa" type="button" data-order>Pedir ahora</button>
+        <a class="btn ghost" href="#carta">Ver la carta</a>
+      </div>
+      <small><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Demora estimada de cocina: 35 minutos</small>
     </div>
+    <div class="ticket-wrap" aria-live="polite">
+      <div class="ticket">
+        <div class="t-head">Pizzería Torren<small>Comanda de cocina</small></div>
+        <dl class="t-rows">
+          <div><dt>API</dt><dd id="tApi">Conectando…</dd></div>
+          <div><dt>Pedidos activos</dt><dd id="tTotal">–</dd></div>
+          <div><dt>Esperando confirmación</dt><dd id="tEspera">–</dd></div>
+          <div><dt>En preparación</dt><dd id="tPrep">–</dd></div>
+        </dl>
+        <p class="t-last" id="tLast">Último pedido: –</p>
+        <div class="t-stub"><button class="btn salsa" type="button" data-order>Tomar un pedido</button></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <section class="hero-banner text-center p-5 my-5 shadow">
-        <div class="container py-2">
-            <h2 class="display-4 title-handwriting text-warning">Bienvenido a Pizzería Torren</h2>
-            <p class="lead text-light mb-4">Especialidades artesanales al horno, sincronizadas en tiempo real con nuestra cocina.</p>
-            <a asp-controller="Pedido" asp-action="Agregar" class="btn btn-warm btn-lg px-5 py-2 rounded-pill shadow">
-                ¡Pedir Ahora!
-            </a>
-        </div>
-    </section>
+<section class="sec" id="carta">
+  <div class="wrap">
+    <div class="sec-head"><h2>La carta</h2><p>Elegí una pizza para verla y agregala al pedido con el botón +.</p></div>
+    <div class="carta">
+      <ul id="lista"></ul>
+      <aside class="visor" id="visor" aria-live="polite"></aside>
+    </div>
+  </div>
+</section>
 
-    <section class="productos my-5">
-        <h2 class="text-center display-5 title-handwriting mb-4 text-light">Nuestras Especialidades</h2>
-        
-        <div class="row g-4">
-            @if (Model != null && Model.Any())
-            {
-                @foreach (var pizza in Model)
-                {
-                    var imagen = string.IsNullOrEmpty(pizza.ImagenUrl) 
-                        ? "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" 
-                        : pizza.ImagenUrl;
+<section class="sec white" id="como">
+  <div class="wrap">
+    <div class="sec-head"><h2>Qué pasa después de pedir</h2></div>
+    <ol class="pasos">
+      <li><b>Hacés el pedido</b><span>Elegís las pizzas y dejás nombre y dirección de entrega.</span></li>
+      <li><b>La API lo registra</b><span>Se guarda en MySQL con tu cliente, tus pizzas y el estado Espera de confirmación.</span></li>
+      <li><b>Aviso a la cocina</b><span>La API le manda la comanda por un socket TCP al puerto 5050.</span></li>
+      <li><b>La cocina responde</b><span>A los pocos segundos pasa a En preparación y lo ves acá abajo.</span></li>
+    </ol>
+    <p class="nota">Hecho con ASP.NET Core, Entity Framework y MySQL. Documentación de la API en <a href="/scalar/v1">/scalar/v1</a> (solo en modo desarrollo).</p>
+  </div>
+</section>
 
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 pizza-card shadow-sm">
-                            <div class="pizza-img-container">
-                                <img src="@imagen" class="pizza-img img-fluid" alt="Foto de @pizza.Nombre">
-                            </div>
-                            <div class="card-body d-flex flex-column">
-                                <h3 class="card-title title-handwriting h2 text-light mb-1">@pizza.Nombre</h3>
-                                <p class="card-text text-secondary small flex-grow-1">@pizza.Descripcion</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary">
-                                    <span class="fs-4 price-tag">$@pizza.Precio.ToString("N2")</span>
-                                    <a asp-controller="Pedido" asp-action="Agregar" asp-route-id="@pizza.Id" class="btn btn-sm btn-warm px-3 rounded-pill">
-                                        Ordenar
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
-            else
-            {
-                <div class="col-12 text-center text-muted py-5">
-                    <p>No se encontraron variedades cargadas en el catálogo.</p>
-                </div>
-            }
-        </div>
-    </section>
-</div>
+<section class="sec" id="seguimiento">
+  <div class="wrap seg">
+    <div>
+      <h2>Seguí tu pedido</h2>
+      <form class="buscar" id="formBuscar">
+        <label class="sr" for="tid">Número de pedido</label>
+        <input id="tid" type="number" min="1" inputmode="numeric" placeholder="Número de pedido" required>
+        <button class="btn salsa" type="submit" style="white-space:nowrap">Buscar pedido</button>
+      </form>
+      <div class="res" id="res" aria-live="polite"></div>
+    </div>
+    <div>
+      <div class="scroll" id="tablaBox"></div>
+      <p class="upd" id="upd"></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="dark">
+  <div class="wrap">
+    <span>Pizzería Torren, proyecto Software 3.2</span>
+    <span><a asp-controller="Pedido" asp-action="Agregar">Formulario completo</a><a href="/pedidos" target="_blank" rel="noopener">Pedidos en JSON</a><a href="/scalar/v1">Documentación API</a></span>
+  </div>
+</footer>
+
+<dialog id="dlg" aria-labelledby="dlgT">
+  <div class="dh"><h2 id="dlgT">Tu pedido</h2><button class="x" type="button" id="cerrar" aria-label="Cerrar"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <form class="db" id="formPedido">
+    <fieldset class="opts" id="opts"><legend>Pizza</legend></fieldset>
+    <div class="cant"><span class="lb">Cantidad</span>
+      <div class="qty"><button type="button" id="menos" aria-label="Quitar una">−</button><output id="qv" aria-live="polite">1</output><button type="button" id="mas" aria-label="Agregar una">+</button></div>
+    </div>
+    <div class="total"><span>Total</span><b id="total">$0</b></div>
+    <div><label class="lb" for="nom">Nombre</label><input id="nom" required maxlength="150" autocomplete="name" placeholder="Ej: Rubén Torren"></div>
+    <div><label class="lb" for="dir">Dirección de entrega</label><input id="dir" required maxlength="255" autocomplete="street-address" placeholder="Ej: Av. San Martín 1234"></div>
+    <div class="err-msg" id="err" role="alert" hidden></div>
+    <button class="btn salsa" type="submit" id="enviar">Confirmar pedido</button>
+    <p class="alt">¿Preferís el formulario clásico? <a asp-controller="Pedido" asp-action="Agregar">Abrirlo</a></p>
+  </form>
+  <div class="db ok" id="ok" hidden>
+    <div class="n" id="okN"></div>
+    <h2>Pedido confirmado</h2>
+    <p id="okT" style="color:var(--muted)"></p>
+    <div class="acts"><button class="btn salsa" type="button" id="okSeg">Seguir mi pedido</button><a class="btn line" id="okComp" href="#">Ver comprobante</a></div>
+  </div>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const MENU=@Json.Serialize(menu);
+const API='/pedidos', COMP='@Url.Action("Confirmacion","Pedido")';
+const $=id=>document.getElementById(id);
+const money=n=>'$'+Number(n).toLocaleString('es-AR');
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const ICON_PLUS='<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+let orders=[],apiOk=null,sel=MENU.length?MENU[0].id:null,qty=1,pick=null,tracked=null,lastTick=null,cancelId=null,cancelT=null;
+const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3200)}
+function photo(p,cls){const i=el('img');i.src=p.imagen;i.alt='Pizza '+p.nombre;i.loading='lazy';i.onerror=()=>i.remove();return i}
+
+/* Carta */
+function drawMenu(){
+  const ul=$('lista');ul.innerHTML='';
+  if(!MENU.length){ul.append(el('li','vacio','Todavía no hay pizzas cargadas en la carta.'));$('visor').hidden=true;return}
+  MENU.forEach(p=>{
+    const li=el('li','row'),b=el('button','pick');b.type='button';b.setAttribute('aria-pressed',p.id===sel);
+    if(p.imagen)b.append(photo(p));
+    const tx=el('div','tx'),nm=el('div','nm');nm.append(el('b',null,p.nombre),el('span','dots'),el('span','pr',money(p.precio)));
+    tx.append(nm,el('p',null,p.descripcion));b.append(tx);
+    b.onclick=()=>{sel=p.id;drawMenu()};
+    b.onpointerenter=e=>{if(e.pointerType==='mouse'&&sel!==p.id){sel=p.id;drawMenu()}};
+    const a=el('button','add');a.type='button';a.innerHTML=ICON_PLUS;a.setAttribute('aria-label','Agregar '+p.nombre+' al pedido');a.onclick=()=>openOrder(p.id);
+    li.append(b,a);ul.append(li);
+  });
+  const p=MENU.find(x=>x.id===sel)||MENU[0],v=$('visor');v.innerHTML='';
+  const ph=el('div','ph');if(p.imagen)ph.append(photo(p));
+  const bd=el('div','bd');bd.append(el('h3',null,p.nombre+' · '+money(p.precio)),el('p',null,p.descripcion));
+  const btn=el('button','btn salsa','Agregar al pedido');btn.type='button';btn.onclick=()=>openOrder(p.id);
+  bd.append(btn);v.append(ph,bd);
+}
+
+/* Modal de pedido */
+const dlg=$('dlg');
+function drawOpts(){
+  const f=$('opts');f.querySelectorAll('label').forEach(l=>l.remove());
+  MENU.forEach(p=>{const l=el('label','opt'),r=el('input');r.type='radio';r.name='pz';r.value=p.id;r.checked=p.id===pick;
+    r.onchange=()=>{pick=p.id;calc()};l.append(r,el('span',null,p.nombre),el('b',null,money(p.precio)));f.append(l)});
+}
+function calc(){const p=MENU.find(x=>x.id===pick);$('qv').textContent=qty;$('total').textContent=money(p?p.precio*qty:0)}
+function openOrder(id){
+  if(!MENU.length){toast('No hay pizzas cargadas en la carta.');return}
+  pick=id??MENU[0].id;qty=1;$('formPedido').hidden=false;$('ok').hidden=true;$('err').hidden=true;$('enviar').disabled=false;$('enviar').textContent='Confirmar pedido';
+  drawOpts();calc();if(!dlg.open)dlg.showModal();
+}
+document.querySelectorAll('[data-order]').forEach(b=>b.onclick=()=>openOrder(sel));
+$('cerrar').onclick=()=>dlg.close();
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+$('menos').onclick=()=>{if(qty>1){qty--;calc()}};
+$('mas').onclick=()=>{if(qty<20){qty++;calc()}};
+
+$('formPedido').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const p=MENU.find(x=>x.id===pick),btn=$('enviar'),err=$('err');
+  if(!p)return;err.hidden=true;btn.disabled=true;btn.textContent='Enviando…';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      clienteNombre:$('nom').value.trim(),clienteDireccion:$('dir').value.trim(),pizzaVariedad:p.nombre,pizzaPrecio:p.precio,cantidad:qty})});
+    if(!r.ok)throw new Error(r.status);
+    const o=await r.json();
+    store.set('torren:ultimo',o.id);
+    $('formPedido').hidden=true;$('ok').hidden=false;
+    $('okN').textContent='#'+o.id;
+    $('okT').textContent=qty+' × '+p.nombre+' para '+$('dir').value.trim()+'. Total '+money(p.precio*qty)+'.';
+    $('okComp').href=COMP+'/'+o.id;
+    $('okSeg').onclick=()=>{dlg.close();$('tid').value=o.id;track(o.id);$('seguimiento').scrollIntoView()};
+    toast('Pedido confirmado');load();
+  }catch(x){
+    err.textContent='No se pudo registrar el pedido. Revisá que la API y la base de datos MySQL estén en línea y volvé a intentar.';
+    err.hidden=false;btn.disabled=false;btn.textContent='Confirmar pedido';
+  }
+});
+
+/* Estado en vivo */
+const kind=s=>/error/i.test(s||'')?'e':/prepar/i.test(s||'')?'p':'w';
+function chip(s){return el('span','chip '+kind(s),s||'Sin estado')}
+async function load(){
+  try{const r=await fetch(API,{cache:'no-store'});if(!r.ok)throw 0;orders=await r.json();apiOk=true;lastTick=new Date()}
+  catch{apiOk=false}
+  render();
+}
+function render(){
+  const T=$('tApi');
+  T.className=apiOk===false?'off':'';T.textContent=apiOk===null?'Conectando…':apiOk?'En línea':'Sin conexión';
+  const w=orders.filter(o=>kind(o.estado)==='w').length,p=orders.filter(o=>kind(o.estado)==='p').length;
+  $('tTotal').textContent=apiOk?orders.length:'–';$('tEspera').textContent=apiOk?w:'–';$('tPrep').textContent=apiOk?p:'–';
+  const last=orders.length?orders.reduce((a,b)=>b.id>a.id?b:a):null;
+  $('tLast').textContent=last?'Último pedido: #'+last.id+' ('+last.estado+')':'Último pedido: ninguno todavía';
+
+  const box=$('tablaBox');box.innerHTML='';
+  if(apiOk===false){box.append(el('p','vacio','No hay conexión con la API en /pedidos. Verificá que el backend esté corriendo y se actualizará solo.'))}
+  else if(!orders.length){const d=el('div','vacio');d.append(el('p',null,'No hay pedidos activos. El primero lo hacés vos.'));const b=el('button','btn salsa','Hacer pedido');b.style.marginTop='1rem';b.onclick=()=>openOrder(sel);d.append(b);box.append(d)}
+  else{
+    const t=el('table','tabla'),h=el('tr');['Pedido','Estado','Atiende',''].forEach(x=>{const th=el('th',null,x);th.scope='col';h.append(th)});
+    const hd=el('thead');hd.append(h);t.append(hd);const tb=el('tbody');
+    [...orders].sort((a,b)=>b.id-a.id).forEach(o=>{
+      const tr=el('tr'),td=el('td');tr.append(el('td',null,'#'+o.id));td.append(chip(o.estado));tr.append(td,el('td',null,o.actorAsignado||'Cocina'));
+      const ac=el('td'),c=el('button','mini',cancelId===o.id?'Confirmar cancelación':'Cancelar');c.type='button';
+      c.setAttribute('aria-label',(cancelId===o.id?'Confirmar cancelación del pedido #':'Cancelar pedido #')+o.id);
+      c.onclick=()=>cancel(o.id);ac.append(c);tr.append(ac);tb.append(tr);
+    });
+    t.append(tb);box.append(t);
+  }
+  $('upd').textContent=lastTick?'Se actualiza cada 4 segundos. Última lectura: '+lastTick.toLocaleTimeString('es-AR'):'';
+  if(tracked!=null)drawRes();
+}
+async function cancel(id){
+  if(cancelId!==id){cancelId=id;clearTimeout(cancelT);cancelT=setTimeout(()=>{cancelId=null;render()},4000);render();return}
+  clearTimeout(cancelT);cancelId=null;
+  try{const r=await fetch(API+'/'+id,{method:'DELETE'});if(!r.ok)throw 0;toast('Pedido #'+id+' cancelado');load()}
+  catch{toast('No se pudo cancelar el pedido #'+id+'. Intentá de nuevo.');render()}
+}
+
+/* Seguimiento */
+function track(id){tracked=Number(id);drawRes()}
+function drawRes(){
+  const r=$('res');r.innerHTML='';
+  const o=orders.find(x=>x.id===tracked);
+  if(apiOk===false){r.append(el('p',null,'No podemos consultar el pedido porque la API no responde.'));return}
+  if(!o){r.append(el('p',null,'No hay un pedido activo con el número '+tracked+'. Puede estar cancelado o no existir.'));return}
+  const k=kind(o.estado),c=el('div','card');
+  c.append(el('b',null,'Pedido #'+o.id),document.createTextNode(' '),chip(o.estado));
+  const et=el('div','etapas');et.setAttribute('aria-hidden','true');
+  const a=el('i',k==='e'?'err':'on'),b=el('i',k==='p'?'on':k==='e'?'err':'');et.append(a,b);
+  const m=el('p',null,k==='p'?'La cocina ya está preparando tu pizza.':k==='e'?'La cocina no recibió el aviso. Avisale al local.':'Recibido. Esperando que la cocina lo confirme.');
+  const l=el('a',null,'Ver comprobante');l.href=COMP+'/'+o.id;
+  c.append(et,m,l);r.append(c);
+}
+$('formBuscar').addEventListener('submit',e=>{e.preventDefault();track($('tid').value)});
+
+drawMenu();
+const prev=store.get('torren:ultimo');if(prev){$('tid').value=prev;tracked=Number(prev)}
+load();setInterval(()=>{if(!document.hidden)load()},4000);
+</script>
+</body>
+</html>
