@@ -38,7 +38,6 @@ app.UseAuthorization();
 
 // ----------------------------------------------------------------------
 // TUS ENDPOINTS DE API MINIMAL Y SOCKETS 
-// (Se mantienen intactos y conviven perfectamente con MVC)
 // ----------------------------------------------------------------------
 app.MapGet("/pedidos", async (PizzeriaDb db) => 
     await db.Pedidos.Where(p => p.Activo).ToListAsync()
