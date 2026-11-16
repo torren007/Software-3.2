@@ -1,18 +1,13 @@
+// API/Controllers/HomeController.cs — el landing lee de la DB, ya no del hardcode
 using Microsoft.AspNetCore.Mvc;
-using Torren3.Models;
+using Microsoft.EntityFrameworkCore;
+using PizzeriaBackend.Data;
 
-namespace Torren3.Controllers
+namespace Torren3.Controllers;
+
+public class HomeController(PizzeriaDb db) : Controller
 {
-    public class HomeController : Controller
-    {
-        // El verbo GET está implícito por defecto
-        public IActionResult Index()
-        {
-            // Solicitamos los datos al Modelo
-            var pizzas = RepositorioPizzas.ObtenerDestacadas();
-            
-            // Retornamos la vista pasándole la colección de pizzas
-            return View(pizzas);
-        }
-    }
-}
+    // GET / — pizzas de la tabla Pizzas, no de RepositorioPizzas
+    public async Task<IActionResult> Index()
+        => View(await db.Pizzas.OrderBy(p => p.Id).ToListAsync());
+}   

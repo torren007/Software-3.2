@@ -1,11 +1,11 @@
-namespace Torren3.Models
+// API/pizza.cs — ahora conoce las columnas nuevas
+namespace PizzeriaBackend.Models;
+
+public class Pizza
 {
-    public class Pizza
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public decimal Precio { get; set; }
-        public string? ImagenUrl { get; set; }
-    }
+    public int Id { get; set; }
+    public string Variedad { get; set; } = string.Empty; // VARCHAR(100) de la DB
+    public string? Descripcion { get; set; }             // NUEVO
+    public decimal Precio { get; set; }
+    public string? ImagenUrl { get; set; }               // NUEVO
 }
