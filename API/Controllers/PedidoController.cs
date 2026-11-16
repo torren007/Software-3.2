@@ -1,111 +1,45 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PizzeriaBackend.Models;
 using PizzeriaBackend.Data;
-using System.Net.Sockets;
-using System.Text;
+using PizzeriaBackend.Models;
+using PizzeriaBackend.Services;
 
-namespace PizzeriaBackend.Controllers
+namespace PizzeriaBackend.Controllers;
+
+// [Authorize] a nivel de clase: sin cookie "Pizzeria.Auth", cualquiera de las
+// tres acciones te redirige a /Login?ReturnUrl=/Pedido/Agregar... y después
+// del login volvés justo acá. Pedir es privado; mirar la carta (Home) no.
+[Authorize]
+public class PedidoController(PizzeriaDb db, IPedidoService pedidos) : Controller
 {
-    public class PedidoController : Controller
+    // GET /Pedido/Agregar — el botón "+" del landing llega con ?variedad=Calabresa
+    // y preselecciona esa card en el formulario (Parte 5).
+    [HttpGet]
+    public async Task<IActionResult> Agregar(string? variedad)
+        => View(await ArmarAsync(new(), variedad));
+
+    // POST /Pedido/Agregar — delega en el servicio (Parte 3): guarda en la DB
+    // y dispara el socket a CocinaApp. Sin lógica de EF ni TCP adentro.
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Agregar(AgregarVM vm)
     {
-        private readonly PizzeriaDb _db;
+        if (!ModelState.IsValid) return View(await ArmarAsync(vm, null));
 
-        // Inyección del DbContext existente de Entity Framework
-        public PedidoController(PizzeriaDb db)
-        {
-            _db = db;
-        }
-
-        // GET: /Pedido/Agregar (Muestra el formulario HTML)
-        [HttpGet]
-        public IActionResult Agregar()
-        {
-            return View();
-        }
-
-        // POST: /Pedido/Agregar (Procesa el formulario HTML y dispara sockets)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Agregar(PedidoDTO dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(dto);
-            }
-
-            try
-            {
-                // 1. Reutilización de la lógica relacional del repositorio:
-                // Busca o crea el cliente
-                var cliente = await _db.Clientes.FirstOrDefaultAsync(c => c.Nombre == dto.ClienteNombre)
-                              ?? new Cliente { Nombre = dto.ClienteNombre, Direccion = dto.ClienteDireccion };
-
-                // Busca o crea la pizza en el menú
-                var pizza = await _db.Pizzas.FirstOrDefaultAsync(p => p.Variedad == dto.PizzaVariedad)
-                            ?? new Pizza { Variedad = dto.PizzaVariedad, Precio = dto.PizzaPrecio };
-
-                // Construcción de la entidad relacional con sus Foreign Keys
-                var nuevoPedido = new Pedido
-                {
-                    Cliente = cliente,
-                    ActorAsignado = "Cocina",
-                    Estado = "Espera de confirmación",
-                    Activo = true,
-                    Detalles = new List<DetallePedido>
-                    {
-                        new DetallePedido { Pizza = pizza, Cantidad = dto.Cantidad }
-                    }
-                };
-
-                // Guardado atómico en la base de datos MySQL
-                _db.Pedidos.Add(nuevoPedido);
-                await _db.SaveChangesAsync();
-
-                Console.WriteLine($"[WEB-MVC] Pedido #{nuevoPedido.Id} creado desde HTML. Enviando socket a Cocina...");
-
-                // 2. Disparo por Socket TCP hacia CocinaApp (puerto 5050)
-                try
-                {
-                    using var tcpClient = new TcpClient("127.0.0.1", 5050);
-                    using var stream = tcpClient.GetStream();
-                    byte[] mensaje = Encoding.UTF8.GetBytes($"NUEVO_PEDIDO:{nuevoPedido.Id}");
-                    await stream.WriteAsync(mensaje, 0, mensaje.Length);
-                }
-                catch (SocketException ex)
-                {
-                    Console.WriteLine($"[ALERTA] Cocina no conectada en puerto 5050: {ex.Message}");
-                    nuevoPedido.Estado = "Error de red interno (Cocina no responde)";
-                    await _db.SaveChangesAsync();
-                }
-
-                // Redirecciona a la vista de confirmación pasando el ID generado
-                return RedirectToAction(nameof(Confirmacion), new { id = nuevoPedido.Id });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR EN PEDIDO] {ex.Message}");
-                ModelState.AddModelError(string.Empty, "Ocurrió un fallo registrando el pedido en la base de datos.");
-                return View(dto);
-            }
-        }
-
-        // GET: /Pedido/Confirmacion/5 (Comprobante y seguimiento de estado)
-        [HttpGet]
-        public async Task<IActionResult> Confirmacion(int id)
-        {
-            var pedido = await _db.Pedidos
-                .Include(p => p.Cliente)
-                .Include(p => p.Detalles)
-                    .ThenInclude(d => d.Pizza)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
-            if (pedido == null)
-            {
-                return NotFound();
-            }
-
-            return View(pedido);
-        }
+        var pedido = await pedidos.CrearAsync(vm.Form);
+        return RedirectToAction(nameof(Confirmacion), new { id = pedido.Id });
     }
+
+    // GET /Pedido/Confirmacion/5 — comprobante con el pedido real de la DB
+    [HttpGet]
+    public async Task<IActionResult> Confirmacion(int id)
+        => await pedidos.ObtenerAsync(id) is { } pedido ? View(pedido) : NotFound();
+
+    // Arma el view model: menú desde la DB + formulario + preselección
+    private async Task<AgregarVM> ArmarAsync(PedidoDTO form, string? variedad) => new()
+    {
+        Pizzas = await db.Pizzas.OrderBy(p => p.Id).ToListAsync(),
+        Form = form,
+        VariedadPrevia = variedad
+    };
 }
