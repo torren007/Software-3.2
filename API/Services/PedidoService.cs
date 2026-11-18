@@ -12,6 +12,9 @@ public interface IPedidoService
 {
     Task<Pedido> CrearAsync(PedidoDTO dto);
     Task<Pedido?> ObtenerAsync(int id);
+
+    // Carta completa desde la tabla Pizzas (la usan el landing y el formulario)
+    Task<List<Pizza>> ObtenerMenuAsync();
 }
 
 public class PedidoService(PizzeriaDb db) : IPedidoService
@@ -54,6 +57,9 @@ public class PedidoService(PizzeriaDb db) : IPedidoService
             .Include(p => p.Cliente)
             .Include(p => p.Detalles).ThenInclude(d => d.Pizza)
             .FirstOrDefaultAsync(p => p.Id == id);
+
+    public async Task<List<Pizza>> ObtenerMenuAsync()
+        => await db.Pizzas.OrderBy(p => p.Id).ToListAsync();
 
     // Socket TCP hacia CocinaApp (127.0.0.1:5050). Si falla, el pedido
     // queda asentado con estado de error para que el cliente lo vea.

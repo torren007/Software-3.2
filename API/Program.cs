@@ -1,9 +1,16 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using PizzeriaBackend.Data;
 using PizzeriaBackend.Models;
 using PizzeriaBackend.Services;
+
+// Cultura invariante para el model binding: en una PC con Windows en es-AR, el decimal
+// "5500.50" que manda el formulario se leería como 550050 (el '.' es separador de miles).
+// Los precios se MUESTRAN en formato argentino desde las vistas / el JS, no desde acá.
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 

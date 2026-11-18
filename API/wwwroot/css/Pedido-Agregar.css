@@ -1,4 +1,4 @@
-
+/* Pedido-Agregar.css — solo el formulario/resumen. Las cards de pizza están en pizza-cards.css */
         :root {
             --invierno-oscuro: #203142;
             --invierno-primario: #3a506b;
@@ -17,88 +17,13 @@
             min-height: 100vh;
         }
 
+        /* Banner de título de la página (el header del sitio es header.css) */
         .header-invernal {
             background: linear-gradient(135deg, var(--invierno-oscuro) 0%, var(--invierno-primario) 100%);
             color: #ffffff;
             padding: 2.2rem 1rem;
             border-bottom: 3px solid var(--invierno-borde);
             box-shadow: 0 4px 16px rgba(32, 49, 66, 0.08);
-        }
-
-        .pizza-card {
-            background: var(--invierno-superficie);
-            border: 2px solid var(--invierno-borde);
-            border-radius: 14px;
-            overflow: hidden;
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .pizza-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--invierno-acento);
-            box-shadow: 0 8px 20px rgba(58, 80, 107, 0.12);
-        }
-
-        .pizza-card.seleccionada {
-            border-color: var(--invierno-primario);
-            background-color: var(--invierno-activo-bg);
-            box-shadow: 0 0 0 3px rgba(58, 80, 107, 0.25);
-        }
-
-        .pizza-card.seleccionada .badge-seleccion {
-            display: block !important;
-        }
-
-        .badge-seleccion {
-            display: none;
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background-color: var(--invierno-primario);
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 0.8rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
-            z-index: 2;
-        }
-
-        .pizza-img-container {
-            height: 165px;
-            overflow: hidden;
-            position: relative;
-            background-color: #cbd5e1;
-        }
-
-        .pizza-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .pizza-card:hover .pizza-img {
-            transform: scale(1.04);
-        }
-
-        .badge-precio {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background-color: rgba(32, 49, 66, 0.85);
-            color: #ffffff;
-            backdrop-filter: blur(4px);
-            font-weight: 600;
-            font-size: 0.9rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 2;
         }
 
         .resumen-card {

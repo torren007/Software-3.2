@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+
 namespace PizzeriaBackend.Models;
 
 // View model del formulario de pedido: une en una sola vista
@@ -6,6 +8,8 @@ namespace PizzeriaBackend.Models;
 public class AgregarVM
 {
     // Las pizzas que muestra el catálogo: salen de db.Pizzas
+    // [ValidateNever]: el menú lo arma el servidor, no viene en el POST
+    [ValidateNever]
     public List<Pizza> Pizzas { get; set; } = new();
 
     // El formulario que se postea (mismos campos que el POST /pedidos)

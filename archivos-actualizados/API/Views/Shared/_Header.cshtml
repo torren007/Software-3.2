@@ -1,0 +1,39 @@
+@{
+    var enLogin = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Login", StringComparison.OrdinalIgnoreCase);
+    var logueado = User.Identity?.IsAuthenticated == true;
+    var rutaActual = (Context.Request.Path + Context.Request.QueryString).ToString();
+}
+<header class="top dark">
+    <div class="wrap">
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="Pizzería Torren, inicio">
+            <svg class="i" viewBox="0 0 24 24" style="width:1.5rem;height:1.5rem;stroke:var(--yema)"><path d="M12 21 3.5 6.5a17 17 0 0 1 17 0z"/><circle cx="10" cy="9.5" r="1"/><circle cx="14" cy="11" r="1"/><circle cx="12" cy="14.5" r="1"/></svg>
+            Pizzería Torren
+        </a>
+
+        <nav class="main" aria-label="Principal">
+            <a asp-controller="Home" asp-action="Index" asp-fragment="carta">La carta</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="como">Cómo funciona</a>
+            <a asp-controller="Home" asp-action="Index" asp-fragment="seguimiento">Seguimiento</a>
+        </nav>
+
+        <div class="h-actions">
+            @if (logueado)
+            {
+                <span class="h-user">Hola, @User.Identity!.Name</span>
+            }
+
+            <a class="hbtn salsa" asp-controller="Pedido" asp-action="Agregar">Hacer pedido</a>
+
+            @if (logueado)
+            {
+                <form asp-controller="Login" asp-action="Salir" method="post">
+                    <button class="hbtn ghost" type="submit">Salir</button>
+                </form>
+            }
+            else if (!enLogin)
+            {
+                <a class="hbtn ghost" asp-controller="Login" asp-action="Index" asp-route-returnUrl="@rutaActual">Iniciar sesión</a>
+            }
+        </div>
+    </div>
+</header>

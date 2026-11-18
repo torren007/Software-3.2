@@ -1,0 +1,200 @@
+@model List<Pizza>
+@{
+    ViewData["Title"] = "Pizzería Torren";
+
+    // Las pizzas vienen de la tabla Pizzas (HomeController). Se pasan al JS ya normalizadas.
+    var menu = Model.Select(p => new
+    {
+        id = p.Id,
+        nombre = p.Variedad,
+        descripcion = p.Descripcion ?? "",
+        precio = p.Precio,
+        imagen = p.ImagenUrl ?? ""
+    });
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pizza-cards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Home-Index.css" asp-append-version="true" />
+}
+
+<main id="inicio">
+<section class="hero dark">
+  <div class="wrap">
+    <div>
+      <h1>Pedí la pizza. Seguí la comanda.</h1>
+      <p class="lead">Elegís de la carta, la cocina recibe el pedido al instante y ves en qué estado está sin tener que llamar.</p>
+      <div class="acts">
+        <a class="btn salsa" asp-controller="Pedido" asp-action="Agregar">Pedir ahora</a>
+        <a class="btn ghost" href="#carta">Ver la carta</a>
+      </div>
+      <small><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Demora estimada de cocina: 35 minutos</small>
+    </div>
+    <div class="ticket-wrap" aria-live="polite">
+      <div class="ticket">
+        <div class="t-head">Pizzería Torren<small>Comanda de cocina</small></div>
+        <dl class="t-rows">
+          <div><dt>API</dt><dd id="tApi">Conectando…</dd></div>
+          <div><dt>Pedidos activos</dt><dd id="tTotal">–</dd></div>
+          <div><dt>Esperando confirmación</dt><dd id="tEspera">–</dd></div>
+          <div><dt>En preparación</dt><dd id="tPrep">–</dd></div>
+        </dl>
+        <p class="t-last" id="tLast">Último pedido: –</p>
+        <div class="t-stub"><a class="btn salsa" asp-controller="Pedido" asp-action="Agregar">Tomar un pedido</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="carta">
+  <div class="wrap">
+    <div class="sec-head"><h2>La carta</h2><p>Elegí una pizza para verla y agregala al pedido con el botón +.</p></div>
+    <div class="carta">
+      <ul id="lista"></ul>
+      <aside class="visor" id="visor" aria-live="polite"></aside>
+    </div>
+  </div>
+</section>
+
+<section class="sec white" id="como">
+  <div class="wrap">
+    <div class="sec-head"><h2>Qué pasa después de pedir</h2></div>
+    <ol class="pasos">
+      <li><b>Hacés el pedido</b><span>Iniciás sesión, elegís las pizzas y dejás nombre y dirección de entrega.</span></li>
+      <li><b>La API lo registra</b><span>Se guarda en MySQL con tu cliente, tus pizzas y el estado Espera de confirmación.</span></li>
+      <li><b>Aviso a la cocina</b><span>La API le manda la comanda por un socket TCP al puerto 5050.</span></li>
+      <li><b>La cocina responde</b><span>A los pocos segundos pasa a En preparación y lo ves acá abajo.</span></li>
+    </ol>
+    <p class="nota">Hecho con ASP.NET Core, Entity Framework y MySQL. Documentación de la API en <a href="/scalar/v1">/scalar/v1</a> (solo en modo desarrollo).</p>
+  </div>
+</section>
+
+<section class="sec" id="seguimiento">
+  <div class="wrap seg">
+    <div>
+      <h2>Seguí tu pedido</h2>
+      <form class="buscar" id="formBuscar">
+        <label class="sr" for="tid">Número de pedido</label>
+        <input id="tid" type="number" min="1" inputmode="numeric" placeholder="Número de pedido" required>
+        <button class="btn salsa" type="submit" style="white-space:nowrap">Buscar pedido</button>
+      </form>
+      <div class="res" id="res" aria-live="polite"></div>
+    </div>
+    <div>
+      <div class="scroll" id="tablaBox"></div>
+      <p class="upd" id="upd"></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="dark">
+  <div class="wrap">
+    <span>Pizzería Torren, proyecto Software 3.2</span>
+    <span><a asp-controller="Pedido" asp-action="Agregar">Formulario completo</a><a href="/pedidos" target="_blank" rel="noopener">Pedidos en JSON</a><a href="/scalar/v1">Documentación API</a></span>
+  </div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+@section Scripts {
+<script>
+const MENU=@Json.Serialize(menu);
+// El "+" y los botones "Agregar" llevan al formulario. Si no hay sesión, [Authorize]
+// redirige a /Login?ReturnUrl=... y después del login se vuelve acá con la pizza elegida.
+const ORDER='@Url.Action("Agregar","Pedido")', API='/pedidos', COMP='@Url.Action("Confirmacion","Pedido")';
+const orderUrl=p=>ORDER+'?variedad='+encodeURIComponent(p.nombre);
+const $=id=>document.getElementById(id);
+const money=n=>'$'+Number(n).toLocaleString('es-AR');
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const ICON_PLUS='<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+let orders=[],apiOk=null,sel=MENU.length?MENU[0].id:null,tracked=null,lastTick=null,cancelId=null,cancelT=null;
+const store={get:k=>{try{return localStorage.getItem(k)}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),3200)}
+function photo(p){const i=el('img');i.src=p.imagen;i.alt='Pizza '+p.nombre;i.loading='lazy';i.onerror=()=>i.remove();return i}
+
+/* Carta */
+function drawMenu(){
+  const ul=$('lista');ul.innerHTML='';
+  if(!MENU.length){ul.append(el('li','vacio','Todavía no hay pizzas cargadas en la carta.'));$('visor').hidden=true;return}
+  MENU.forEach(p=>{
+    const li=el('li','item'),b=el('button','pick');b.type='button';b.setAttribute('aria-pressed',p.id===sel);
+    if(p.imagen)b.append(photo(p));
+    const tx=el('div','tx'),nm=el('div','nm');nm.append(el('b',null,p.nombre),el('span','dots'),el('span','pr',money(p.precio)));
+    tx.append(nm,el('p',null,p.descripcion));b.append(tx);
+    b.onclick=()=>{sel=p.id;drawMenu()};
+    b.onpointerenter=e=>{if(e.pointerType==='mouse'&&sel!==p.id){sel=p.id;drawMenu()}};
+    const a=el('a','add');a.href=orderUrl(p);a.innerHTML=ICON_PLUS;a.setAttribute('aria-label','Agregar '+p.nombre+' al pedido');
+    li.append(b,a);ul.append(li);
+  });
+  const p=MENU.find(x=>x.id===sel)||MENU[0],v=$('visor');v.innerHTML='';
+  const ph=el('div','ph');if(p.imagen)ph.append(photo(p));
+  const bd=el('div','bd');bd.append(el('h3',null,p.nombre+' · '+money(p.precio)),el('p',null,p.descripcion));
+  const btn=el('a','btn salsa','Agregar al pedido');btn.href=orderUrl(p);
+  bd.append(btn);v.append(ph,bd);
+}
+
+/* Estado en vivo */
+const kind=s=>/error/i.test(s||'')?'e':/prepar/i.test(s||'')?'p':'w';
+function chip(s){return el('span','chip '+kind(s),s||'Sin estado')}
+async function load(){
+  try{const r=await fetch(API,{cache:'no-store'});if(!r.ok)throw 0;orders=await r.json();apiOk=true;lastTick=new Date()}
+  catch{apiOk=false}
+  render();
+}
+function render(){
+  const T=$('tApi');
+  T.className=apiOk===false?'off':'';T.textContent=apiOk===null?'Conectando…':apiOk?'En línea':'Sin conexión';
+  const w=orders.filter(o=>kind(o.estado)==='w').length,p=orders.filter(o=>kind(o.estado)==='p').length;
+  $('tTotal').textContent=apiOk?orders.length:'–';$('tEspera').textContent=apiOk?w:'–';$('tPrep').textContent=apiOk?p:'–';
+  const last=orders.length?orders.reduce((a,b)=>b.id>a.id?b:a):null;
+  $('tLast').textContent=last?'Último pedido: #'+last.id+' ('+last.estado+')':'Último pedido: ninguno todavía';
+
+  const box=$('tablaBox');box.innerHTML='';
+  if(apiOk===false){box.append(el('p','vacio','No hay conexión con la API en /pedidos. Verificá que el backend esté corriendo y se actualizará solo.'))}
+  else if(!orders.length){const d=el('div','vacio');d.append(el('p',null,'No hay pedidos activos. El primero lo hacés vos.'));const b=el('a','btn salsa','Hacer pedido');b.href=ORDER;b.style.marginTop='1rem';d.append(b);box.append(d)}
+  else{
+    const t=el('table','tabla'),h=el('tr');['Pedido','Estado','Atiende',''].forEach(x=>{const th=el('th',null,x);th.scope='col';h.append(th)});
+    const hd=el('thead');hd.append(h);t.append(hd);const tb=el('tbody');
+    [...orders].sort((a,b)=>b.id-a.id).forEach(o=>{
+      const tr=el('tr'),td=el('td');tr.append(el('td',null,'#'+o.id));td.append(chip(o.estado));tr.append(td,el('td',null,o.actorAsignado||'Cocina'));
+      const ac=el('td'),c=el('button','mini',cancelId===o.id?'Confirmar cancelación':'Cancelar');c.type='button';
+      c.setAttribute('aria-label',(cancelId===o.id?'Confirmar cancelación del pedido #':'Cancelar pedido #')+o.id);
+      c.onclick=()=>cancel(o.id);ac.append(c);tr.append(ac);tb.append(tr);
+    });
+    t.append(tb);box.append(t);
+  }
+  $('upd').textContent=lastTick?'Se actualiza cada 4 segundos. Última lectura: '+lastTick.toLocaleTimeString('es-AR'):'';
+  if(tracked!=null)drawRes();
+}
+async function cancel(id){
+  if(cancelId!==id){cancelId=id;clearTimeout(cancelT);cancelT=setTimeout(()=>{cancelId=null;render()},4000);render();return}
+  clearTimeout(cancelT);cancelId=null;
+  try{const r=await fetch(API+'/'+id,{method:'DELETE'});if(!r.ok)throw 0;toast('Pedido #'+id+' cancelado');load()}
+  catch{toast('No se pudo cancelar el pedido #'+id+'. Intentá de nuevo.');render()}
+}
+
+/* Seguimiento */
+function track(id){tracked=Number(id);drawRes()}
+function drawRes(){
+  const r=$('res');r.innerHTML='';
+  const o=orders.find(x=>x.id===tracked);
+  if(apiOk===false){r.append(el('p',null,'No podemos consultar el pedido porque la API no responde.'));return}
+  if(!o){r.append(el('p',null,'No hay un pedido activo con el número '+tracked+'. Puede estar cancelado o no existir.'));return}
+  const k=kind(o.estado),c=el('div','card');
+  c.append(el('b',null,'Pedido #'+o.id),document.createTextNode(' '),chip(o.estado));
+  const et=el('div','etapas');et.setAttribute('aria-hidden','true');
+  const a=el('i',k==='e'?'err':'on'),b=el('i',k==='p'?'on':k==='e'?'err':'');et.append(a,b);
+  const m=el('p',null,k==='p'?'La cocina ya está preparando tu pizza.':k==='e'?'La cocina no recibió el aviso. Avisale al local.':'Recibido. Esperando que la cocina lo confirme.');
+  const l=el('a',null,'Ver comprobante');l.href=COMP+'/'+o.id;
+  c.append(et,m,l);r.append(c);
+}
+$('formBuscar').addEventListener('submit',e=>{e.preventDefault();track($('tid').value)});
+
+drawMenu();
+// "torren:ultimo" lo guarda la pantalla de confirmación del pedido
+const prev=store.get('torren:ultimo');if(prev){$('tid').value=prev;tracked=Number(prev)}
+load();setInterval(()=>{if(!document.hidden)load()},4000);
+</script>
+}

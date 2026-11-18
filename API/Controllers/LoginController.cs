@@ -40,6 +40,6 @@ public class LoginController(IAutenticacionService auth) : Controller
     public async Task<IActionResult> Salir()
     {
         await auth.SalirAsync(HttpContext);
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction("Index", "Home");
     }
 }

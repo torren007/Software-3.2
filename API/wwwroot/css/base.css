@@ -1,0 +1,28 @@
+/* ==========================================================
+   base.css — lo que comparten TODAS las vistas (se carga en _Layout)
+   Tokens de color, tipografía y utilidades mínimas.
+   NO resetea márgenes ni define .btn para no pelearse con Bootstrap.
+   ========================================================== */
+:root{
+  --navy:#14212F; --navy2:#1E3145; --mist:#EEF2F6; --muted:#52657A;
+  --salsa:#C8321F; --salsa-d:#A82817; --yema:#F0B23E; --albahaca:#2F7D4F;
+  --line:#D3DCE6; --paper:#FAF8F2; --focus:#2A62C9;
+  --f:'Bricolage Grotesque',system-ui,'Segoe UI',sans-serif;
+  --m:'DM Mono',ui-monospace,Consolas,monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{margin:0;font:400 1rem/1.6 var(--f);color:var(--navy);background:var(--mist)}
+
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.dark :focus-visible{outline-color:var(--yema)}
+
+.wrap{width:min(1120px,100% - 2.5rem);margin-inline:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+svg.i{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}

@@ -1,40 +1,64 @@
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Pedido
+@using System.Globalization
+@functions {
+    static string Money(decimal d) => "$" + d.ToString("N0", new CultureInfo("es-AR"));
+}
 @{
-    ViewData["Title"] = "Pedido Confirmado";
+    ViewData["Title"] = "Pedido confirmado · Pizzería Torren";
+    var total = Model.Detalles.Sum(d => d.Cantidad * (d.Pizza?.Precio ?? 0m));
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/Pedido-Confirmacion.css" asp-append-version="true" />
+}
 
-    <!-- Bootstrap 5.3 & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
-    <!-- Vinculación del CSS de Confirmación -->
-    <link rel="stylesheet" href="~/css/Pedido-Confirmacion.css" />
-</head>
-
-<body>
-
+<div class="confirmacion-page">
     <div class="confirmacion-card">
         <div class="confirmacion-header">
             <div class="icono-check">
                 <i class="bi bi-check2"></i>
             </div>
-            <h3 class="fw-bold mb-1">¡Pedido Recibido!</h3>
+            <h3 class="fw-bold mb-1">¡Pedido #@Model.Id recibido!</h3>
             <p class="mb-0 text-white-50">Tu orden ya está en la cocina</p>
         </div>
 
-        <div class="p-4 text-center">
+        <div class="p-4">
+            <table class="table table-sm confirmacion-resumen mb-3">
+                <thead>
+                    <tr><th scope="col">Pizza</th><th scope="col" class="text-center">Cant.</th><th scope="col" class="text-end">Subtotal</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Detalles)
+                    {
+                        <tr>
+                            <td>@d.Pizza?.Variedad</td>
+                            <td class="text-center">@d.Cantidad</td>
+                            <td class="text-end">@Money(d.Cantidad * (d.Pizza?.Precio ?? 0m))</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr><th colspan="2">Total</th><th class="text-end">@Money(total)</th></tr>
+                </tfoot>
+            </table>
+
             <div class="alert alert-light border text-start mb-4" style="border-color: #c5d4e2 !important;">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-fill text-muted me-2"></i>
+                    <span class="small text-muted">Cliente:</span>
+                    <strong class="ms-auto small">@Model.Cliente?.Nombre</strong>
+                </div>
                 <div class="d-flex align-items-center mb-2">
                     <i class="bi bi-geo-alt-fill text-muted me-2"></i>
                     <span class="small text-muted">Destino:</span>
-                    <strong class="ms-auto small">@(ViewBag.Direccion ?? "A domicilio")</strong>
+                    <strong class="ms-auto small">@(Model.Cliente?.Direccion ?? "A domicilio")</strong>
+                </div>
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-activity text-muted me-2"></i>
+                    <span class="small text-muted">Estado:</span>
+                    <strong class="ms-auto small">@(Model.Estado ?? "Sin estado")</strong>
                 </div>
                 <div class="d-flex align-items-center">
                     <i class="bi bi-hourglass-split text-muted me-2"></i>
@@ -43,23 +67,24 @@
                 </div>
             </div>
 
-            <p class="text-muted small mb-4">
-                Recibirás un mensaje de confirmación en breve. Te avisaremos cuando el repartidor vaya en camino.
-            </p>
-
             <div class="d-grid gap-2">
-                <!-- Acción 1: Pedir otra pizza (TagHelper puro) -->
-                <a asp-controller="Pedido" asp-action="Agregar" class="btn-pedido-nuevo shadow-sm">
-                    🍕 Pedir otra pizza ahora
+                <a asp-controller="Home" asp-action="Index" asp-fragment="seguimiento" class="btn-pedido-nuevo shadow-sm text-center">
+                    <i class="bi bi-geo me-1"></i> Seguir mi pedido
                 </a>
-
-                <!-- Acción 2: Volver al menú principal (TagHelper puro) -->
-                <a asp-controller="Home" asp-action="Index" class="btn-volver-menu">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                <a asp-controller="Pedido" asp-action="Agregar" class="btn-volver-menu text-center">
+                    🍕 Pedir otra pizza
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn-volver-menu text-center">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al menú principal
                 </a>
             </div>
         </div>
     </div>
+</div>
 
-</body>
-</html>
+@section Scripts {
+<script>
+    // El landing lee esto para precargar el "Seguí tu pedido"
+    try { localStorage.setItem('torren:ultimo', '@Model.Id'); } catch (e) { }
+</script>
+}

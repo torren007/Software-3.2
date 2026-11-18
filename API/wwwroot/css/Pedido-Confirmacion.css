@@ -4,11 +4,20 @@
             color: #1e293b;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
+        }
+
+        /* El centrado ya no va en <body> (ahora hay un header arriba) */
+        .confirmacion-page {
+            min-height: calc(100vh - 4rem);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
         }
+
+        .confirmacion-resumen { text-align: left; }
+        .confirmacion-resumen td, .confirmacion-resumen th { padding: .4rem .25rem; font-size: .92rem; }
+        .confirmacion-estado { font-size: .8rem; }
 
         .confirmacion-card {
             background: #ffffff;
