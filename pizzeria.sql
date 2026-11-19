@@ -1,4 +1,4 @@
--- Active: 1776719132005@@127.0.0.1@3306@5to_PizzeriaDB
+-- Active: 1700068523370@@127.0.0.1@3306@5to_PizzeriaDB
 -- PARTE 1: BD actualizada — pizzas con Descripcion/ImagenUrl + Usuarios para login
 
 DROP DATABASE IF EXISTS 5to_PizzeriaDB;
