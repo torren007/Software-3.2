@@ -1,0 +1,55 @@
+@model RegistroViewModel
+@{
+    ViewData["Title"] = "Crear cuenta · Pizzería Torren";
+}
+
+@section Styles {
+    @* Mismo estilo que el login: las clases .login-* sirven para las dos pantallas *@
+    <link rel="stylesheet" href="~/css/Login-Index.css" asp-append-version="true" />
+}
+
+<main class="login-page">
+    <div class="login-card">
+        <div class="login-head">
+            <h1>Crear cuenta</h1>
+            <p>Registrate para poder hacer tus pedidos.</p>
+        </div>
+
+        <form class="login-form" asp-controller="Registro" asp-action="Index" method="post" novalidate>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="err-msg" role="alert"></div>
+
+            <div>
+                <label class="lb" asp-for="Nombre">Nombre</label>
+                <input asp-for="Nombre" autocomplete="name" placeholder="Ej: Rubén Torren" autofocus />
+                <span class="field-err" asp-validation-for="Nombre"></span>
+            </div>
+
+            <div>
+                <label class="lb" asp-for="Email">Email</label>
+                <input asp-for="Email" autocomplete="username" placeholder="vos@ejemplo.com" />
+                <span class="field-err" asp-validation-for="Email"></span>
+            </div>
+
+            <div>
+                <label class="lb" asp-for="Password">Contraseña</label>
+                <input asp-for="Password" autocomplete="new-password" />
+                <span class="field-err" asp-validation-for="Password"></span>
+            </div>
+
+            <div>
+                <label class="lb" asp-for="ConfirmarPassword">Repetir contraseña</label>
+                <input asp-for="ConfirmarPassword" autocomplete="new-password" />
+                <span class="field-err" asp-validation-for="ConfirmarPassword"></span>
+            </div>
+
+            <button class="btn-login" type="submit">Crear cuenta</button>
+
+            <p class="login-foot">
+                ¿Ya tenés cuenta?
+                <a asp-controller="Login" asp-action="Index" asp-route-returnUrl="@Model.ReturnUrl">Iniciá sesión</a>
+            </p>
+        </form>
+    </div>
+</main>

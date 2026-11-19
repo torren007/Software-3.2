@@ -12,6 +12,7 @@ namespace PizzeriaBackend.Services;
 public interface IAutenticacionService
 {
     Task<Usuario?> ValidarAsync(string email, string password);
+    Task<Usuario?> RegistrarAsync(string nombre, string email, string password);
     Task EntrarAsync(HttpContext http, Usuario usuario, bool persistente);
     Task SalirAsync(HttpContext http);
 }
@@ -33,6 +34,26 @@ public class AutenticacionService(PizzeriaDb db) : IAutenticacionService
         var hash = Hashear(password);
         return await db.Usuarios.FirstOrDefaultAsync(
             u => u.Activo && u.Email == email && u.PasswordHash == hash);
+    }
+
+    // Crea un usuario con rol "Cliente". Devuelve null si el email ya está registrado.
+    // El rol NO es parámetro a propósito: nadie puede registrarse como Admin desde la web.
+    public async Task<Usuario?> RegistrarAsync(string nombre, string email, string password)
+    {
+        email = email.Trim();
+        if (await db.Usuarios.AnyAsync(u => u.Email == email)) return null;
+
+        var usuario = new Usuario
+        {
+            Nombre = nombre.Trim(),
+            Email = email,
+            PasswordHash = Hashear(password)   // mismo hash que usa el login; Rol = "Cliente" por defecto
+        };
+
+        db.Usuarios.Add(usuario);
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateException) { return null; }   // el UNIQUE de Email la frenó (dos registros a la vez)
+        return usuario;
     }
 
     // Materializa la cookie "Pizzeria.Auth" en el navegador

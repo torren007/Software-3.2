@@ -1,5 +1,7 @@
 @{
-    var enLogin = string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Login", StringComparison.OrdinalIgnoreCase);
+    var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
+    var enLogin = string.Equals(controlador, "Login", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(controlador, "Registro", StringComparison.OrdinalIgnoreCase);
     var logueado = User.Identity?.IsAuthenticated == true;
     var rutaActual = (Context.Request.Path + Context.Request.QueryString).ToString();
 }
