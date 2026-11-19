@@ -52,6 +52,10 @@
                 <p class="dev-hint">Solo en desarrollo: admin@pizzeria.com / admin1234</p>
             }
 
+            <p class="login-foot">
+                ¿No tenés cuenta?
+                <a asp-controller="Registro" asp-action="Index" asp-route-returnUrl="@Model.ReturnUrl">Creá una</a>
+            </p>
             <p class="login-foot"><a asp-controller="Home" asp-action="Index">← Volver a la carta</a></p>
         </form>
     </div>
