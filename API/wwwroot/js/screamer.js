@@ -15,14 +15,19 @@
   let activo = false;
   let sonido = null;
 
-  // Precarga cuando el navegador está libre (así el susto sale sin demora)
+  // Precarga cuando el navegador está libre (así el susto sale sin demora).
+  // Es opcional: si falla, igual funciona (se carga al hacer clic).
   const precargar = () => {
-    new Image().src = GIF;
-    sonido = new Audio(AUDIO);
-    sonido.preload = 'auto';
-    sonido.volume = VOLUMEN;
+    try {
+      new Image().src = GIF;
+      sonido = new Audio(AUDIO);
+      sonido.preload = 'auto';
+      sonido.volume = VOLUMEN;
+    } catch { /* ignorar */ }
   };
-  (window.requestIdleCallback || setTimeout)(precargar, 1500);
+  const cuandoLibre = window.requestIdleCallback
+    ? (fn) => window.requestIdleCallback(fn, { timeout: 3000 }) // 2º parámetro = objeto de opciones, NO un número
+    : (fn) => setTimeout(fn, 1500);
 
   function disparar(origen) {
     if (activo) return;
@@ -61,7 +66,7 @@
     sonido.volume = VOLUMEN;
     sonido.currentTime = 0;
     sonido.addEventListener('ended', liberar, { once: true });
-    sonido.play().catch(() => { clearTimeout(timer); timer = setTimeout(liberar, 3000); }); // sin audio: libera enseguida
+    sonido.play()?.catch(() => { clearTimeout(timer); timer = setTimeout(liberar, 3000); }); // sin audio: libera enseguida
 
     timer = setTimeout(liberar, BLOQUEO_MAX_MS);
 
@@ -103,4 +108,6 @@
     const boton = e.target.closest('[data-creadores]');
     if (boton) disparar(boton);
   });
+
+  cuandoLibre(precargar);
 })();
