@@ -15,3 +15,10 @@ dotnet add package Scalar.AspNetCore
 http://localhost:5180/scalar/v1
 
 http://localhost:5180/pedidos
+
+
+SELECT Id, Email, Nombre, Rol, Activo, PasswordHash FROM Usuarios;
+
+SELECT * FROM Clientes;
+SELECT * FROM Pedidos;
+SELECT * FROM DetallesPedido;
