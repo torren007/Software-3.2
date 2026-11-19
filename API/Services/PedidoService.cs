@@ -10,7 +10,12 @@ namespace PizzeriaBackend.Services;
 // ni inline en Program.cs, para que ninguno de los dos pase de un puño.
 public interface IPedidoService
 {
+    // API (ClienteApp): UNA pizza; si la variedad no existe, la crea
     Task<Pedido> CrearAsync(PedidoDTO dto);
+
+    // Formulario web: VARIAS pizzas, todas de la carta. Devuelve null si alguna ya no existe
+    Task<Pedido?> CrearDesdeMenuAsync(NuevoPedidoDTO dto);
+
     Task<Pedido?> ObtenerAsync(int id);
 
     // Carta completa desde la tabla Pizzas (la usan el landing y el formulario)
@@ -21,27 +26,47 @@ public class PedidoService(PizzeriaDb db) : IPedidoService
 {
     public async Task<Pedido> CrearAsync(PedidoDTO dto)
     {
-        // 1. Busca o crea el cliente (mismo criterio que el código original: por nombre)
-        var cliente = await db.Clientes.FirstOrDefaultAsync(c => c.Nombre == dto.ClienteNombre)
-                      ?? new Cliente { Nombre = dto.ClienteNombre, Direccion = dto.ClienteDireccion };
-
-        // 2. Busca o crea la pizza en el menú. Las variedades nuevas
-        //    (ej: "Muzzarella Grande" de ClienteApp) entran con
-        //    Descripcion e ImagenUrl en NULL: por eso la DB las definió así.
+        // Las variedades nuevas (ej: "Muzzarella Grande" de ClienteApp) entran con
+        // Descripcion e ImagenUrl en NULL: por eso la DB las definió así.
         var pizza = await db.Pizzas.FirstOrDefaultAsync(p => p.Variedad == dto.PizzaVariedad)
                     ?? new Pizza { Variedad = dto.PizzaVariedad, Precio = dto.PizzaPrecio };
 
-        // 3. Arma el pedido relacional: EF resuelve las FK en un solo SaveChanges
+        return await GuardarAsync(dto.ClienteNombre, dto.ClienteDireccion,
+            new() { new() { Pizza = pizza, Cantidad = dto.Cantidad } });
+    }
+
+    public async Task<Pedido?> CrearDesdeMenuAsync(NuevoPedidoDTO dto)
+    {
+        var menu = await db.Pizzas.ToListAsync();   // tabla chica: se trae entera
+        var detalles = new List<DetallePedido>();
+
+        foreach (var item in dto.Items)
+        {
+            var pizza = menu.FirstOrDefault(p =>
+                string.Equals(p.Variedad, item.Variedad, StringComparison.OrdinalIgnoreCase));
+            if (pizza is null) return null;          // alguien tocó el formulario o la sacaron de la carta
+
+            detalles.Add(new DetallePedido { Pizza = pizza, Cantidad = item.Cantidad });
+        }
+
+        return await GuardarAsync(dto.ClienteNombre, dto.ClienteDireccion, detalles);
+    }
+
+    // Parte común: busca o crea el cliente, guarda el pedido y avisa a la cocina
+    private async Task<Pedido> GuardarAsync(string nombre, string direccion, List<DetallePedido> detalles)
+    {
+        // Mismo criterio que el código original: el cliente se busca por nombre
+        var cliente = await db.Clientes.FirstOrDefaultAsync(c => c.Nombre == nombre)
+                      ?? new Cliente { Nombre = nombre, Direccion = direccion };
+
+        // EF resuelve todas las FK en un solo SaveChanges (una transacción)
         var pedido = new Pedido
         {
             Cliente = cliente,
             ActorAsignado = "Cocina",
             Estado = "Espera de confirmación",
             Activo = true,
-            Detalles = new List<DetallePedido>
-            {
-                new() { Pizza = pizza, Cantidad = dto.Cantidad }
-            }
+            Detalles = detalles
         };
 
         db.Pedidos.Add(pedido);

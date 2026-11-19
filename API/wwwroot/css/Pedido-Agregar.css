@@ -125,3 +125,58 @@
             background-color: #f1f5f9;
             color: var(--invierno-oscuro);
         }
+
+        /* ---- "Agregar pizza" y lista "Tu pedido" ---- */
+        .btn-agregar {
+            background-color: #ffffff;
+            color: var(--invierno-primario);
+            border: 2px solid var(--invierno-primario);
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.55rem 1rem;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .btn-agregar:hover {
+            background-color: var(--invierno-primario);
+            color: #ffffff;
+        }
+
+        .btn-agregar:disabled {
+            opacity: 0.5;
+        }
+
+        .lista-pedido li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--invierno-borde);
+            font-size: 0.92rem;
+        }
+
+        .lista-pedido .it-cant {
+            font-weight: 700;
+            color: var(--invierno-primario);
+            min-width: 2.4rem;
+        }
+
+        .lista-pedido .it-nombre { flex: 1; }
+
+        .lista-pedido .it-sub {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .btn-quitar {
+            border: 0;
+            background: none;
+            color: #94a3b8;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+        }
+
+        .btn-quitar:hover {
+            color: #b42318;
+            background: #fde8e6;
+        }

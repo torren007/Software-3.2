@@ -13,7 +13,7 @@ namespace PizzeriaBackend.Controllers;
 public class PedidoController(IPedidoService pedidos) : Controller
 {
     // GET /Pedido/Agregar — el "+" del landing llega con ?variedad=Calabresa
-    // y preselecciona esa card en el formulario.
+    // y deja esa pizza ya cargada en el pedido.
     [HttpGet]
     public async Task<IActionResult> Agregar(string? variedad)
         => View(await ArmarAsync(new(), variedad));
@@ -24,7 +24,13 @@ public class PedidoController(IPedidoService pedidos) : Controller
     {
         if (!ModelState.IsValid) return View(await ArmarAsync(vm.Form, null));
 
-        var pedido = await pedidos.CrearAsync(vm.Form);
+        var pedido = await pedidos.CrearDesdeMenuAsync(vm.Form);
+        if (pedido is null)
+        {
+            ModelState.AddModelError(string.Empty, "Alguna de las pizzas ya no está en la carta.");
+            return View(await ArmarAsync(vm.Form, null));
+        }
+
         return RedirectToAction(nameof(Confirmacion), new { id = pedido.Id });
     }
 
@@ -34,7 +40,7 @@ public class PedidoController(IPedidoService pedidos) : Controller
         => await pedidos.ObtenerAsync(id) is { } pedido ? View(pedido) : NotFound();
 
     // Arma el view model: menú desde la DB + formulario + preselección
-    private async Task<AgregarVM> ArmarAsync(PedidoDTO form, string? variedad) => new()
+    private async Task<AgregarVM> ArmarAsync(NuevoPedidoDTO form, string? variedad) => new()
     {
         Pizzas = await pedidos.ObtenerMenuAsync(),
         Form = form,

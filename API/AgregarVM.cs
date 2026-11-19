@@ -12,8 +12,8 @@ public class AgregarVM
     [ValidateNever]
     public List<Pizza> Pizzas { get; set; } = new();
 
-    // El formulario que se postea (mismos campos que el POST /pedidos)
-    public PedidoDTO Form { get; set; } = new();
+    // El formulario que se postea: cliente + lista de pizzas
+    public NuevoPedidoDTO Form { get; set; } = new();
 
     // ?variedad=... del landing: marca la card correspondiente
     // como checked al abrir el formulario.

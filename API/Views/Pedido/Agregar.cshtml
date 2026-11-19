@@ -3,16 +3,28 @@
 @functions {
     // Visual: $5.500 (formato argentino)
     static string Money(decimal d) => "$" + d.ToString("N0", new CultureInfo("es-AR"));
-    // Para data-precio y el hidden: siempre con punto decimal (el servidor corre en cultura invariante)
+    // Para data-precio: siempre con punto decimal
     static string Inv(decimal d) => d.ToString("0.##", CultureInfo.InvariantCulture);
 }
 @{
     ViewData["Title"] = "Realizar pedido · Pizzería Torren";
 
-    // Pizza preseleccionada: ?variedad= del "+" del landing, o la que ya estaba si el POST falló
-    var buscada = Model.VariedadPrevia ?? Model.Form.PizzaVariedad;
-    var elegida = Model.Pizzas.FirstOrDefault(p => string.Equals(p.Variedad, buscada, StringComparison.OrdinalIgnoreCase))
-                  ?? Model.Pizzas.FirstOrDefault();
+    // Pizza que llega con ?variedad= desde el "+" del landing (si existe en la carta)
+    var previa = Model.Pizzas.FirstOrDefault(p =>
+        string.Equals(p.Variedad, Model.VariedadPrevia, StringComparison.OrdinalIgnoreCase));
+
+    // Card resaltada al abrir: la del landing o, si no hay, la primera
+    var elegida = previa ?? Model.Pizzas.FirstOrDefault();
+
+    // Pedido con el que arranca la página:
+    //  - si el POST falló, lo que el usuario ya había armado
+    //  - si viene del "+", esa pizza x1 (el "+" significa "agregar al pedido")
+    //  - si no, vacío
+    var inicial = Model.Form.Items.Count > 0
+        ? Model.Form.Items
+        : previa is not null
+            ? new List<ItemPedidoDTO> { new() { Variedad = previa.Variedad, Cantidad = 1 } }
+            : new List<ItemPedidoDTO>();
 }
 
 @section Styles {
@@ -25,7 +37,7 @@
 <div class="header-invernal mb-4">
     <div class="container text-center">
         <h1 class="display-6 mb-1"><i class="bi bi-snow me-2"></i> Realizá tu pedido</h1>
-        <p class="mb-0 opacity-75">Seleccioná tu pizza, indicá la cantidad y confirmá los datos de entrega.</p>
+        <p class="mb-0 opacity-75">Elegí tus pizzas, agregalas al pedido y confirmá los datos de entrega.</p>
     </div>
 </div>
 
@@ -33,9 +45,9 @@
     <form asp-controller="Pedido" asp-action="Agregar" method="post" id="formPedido">
         @* El token antiforgery lo agrega solo el form tag helper *@
 
-        @* Los name llevan el prefijo "Form." para bindear con AgregarVM.Form (PedidoDTO) *@
-        <input type="hidden" id="PizzaVariedad" name="Form.PizzaVariedad" value="@elegida?.Variedad" />
-        <input type="hidden" id="PizzaPrecio" name="Form.PizzaPrecio" value="@(elegida is null ? "0" : Inv(elegida.Precio))" />
+        @* Acá el JS escribe un par de hidden por cada pizza del pedido:
+           Form.Items[0].Variedad, Form.Items[0].Cantidad, Form.Items[1]... *@
+        <div id="itemsHidden"></div>
 
         <div class="row g-4">
 
@@ -43,7 +55,7 @@
             <div class="col-lg-8">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0 text-secondary-emphasis">
-                        <i class="bi bi-grid-3x3-gap-fill text-muted me-2"></i>1. Seleccioná tu variedad
+                        <i class="bi bi-grid-3x3-gap-fill text-muted me-2"></i>1. Seleccioná una pizza
                     </h5>
                     <span class="text-muted small">Hacé clic sobre una tarjeta</span>
                 </div>
@@ -85,33 +97,46 @@
                 }
             </div>
 
-            <!-- Resumen y datos del cliente -->
+            <!-- Pedido y datos del cliente -->
             <div class="col-lg-4">
                 <div class="resumen-card">
                     <div class="resumen-header">
-                        <i class="bi bi-receipt me-2"></i>2. Resumen y entrega
+                        <i class="bi bi-receipt me-2"></i>2. Armá tu pedido
                     </div>
 
                     <div class="p-3">
+                        @* Pizza seleccionada + cantidad + botón para sumarla al pedido *@
                         <div class="card bg-light border-0 p-3 mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="fw-semibold" id="resumenPizzaNombre">@elegida?.Variedad</span>
-                                <span class="badge bg-secondary" id="resumenPrecioUnitario">@(elegida is null ? "" : Money(elegida.Precio) + " c/u")</span>
+                                <span class="fw-semibold" id="actualNombre">@elegida?.Variedad</span>
+                                <span class="badge bg-secondary" id="actualPrecio">@(elegida is null ? "" : Money(elegida.Precio) + " c/u")</span>
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center mt-2">
                                 <label class="small fw-semibold text-muted" for="Cantidad">Cantidad:</label>
                                 <div class="qty-box">
                                     <button type="button" class="btn-qty" id="btnRestar" aria-label="Restar"><i class="bi bi-dash"></i></button>
-                                    <input asp-for="Form.Cantidad" id="Cantidad" type="number" class="qty-input" min="1" max="50" required />
+                                    @* Sin "name": es solo el selector; lo que se envía son los hidden de arriba *@
+                                    <input id="Cantidad" type="number" class="qty-input" min="1" max="50" value="1" />
                                     <button type="button" class="btn-qty" id="btnSumar" aria-label="Sumar"><i class="bi bi-plus"></i></button>
                                 </div>
                             </div>
+
+                            <button type="button" class="btn btn-agregar w-100 mt-3" id="btnAgregar" disabled="@(elegida is null)">
+                                <i class="bi bi-plus-circle me-1"></i> Agregar pizza
+                            </button>
                         </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                        @* Lo que ya está en el pedido *@
+                        <h6 class="fw-bold mb-2 text-secondary-emphasis">
+                            <i class="bi bi-bag-check me-1"></i>Tu pedido
+                        </h6>
+                        <ul class="lista-pedido list-unstyled mb-1" id="listaPedido"></ul>
+                        <p class="text-muted small mb-2" id="pedidoVacio">Todavía no agregaste ninguna pizza.</p>
+
+                        <div class="d-flex justify-content-between align-items-center my-3 px-1">
                             <span class="fw-bold text-secondary">Total:</span>
-                            <span class="h4 mb-0 fw-bold text-dark" id="totalTexto">@(elegida is null ? "$0" : Money(elegida.Precio * Math.Max(1, Model.Form.Cantidad)))</span>
+                            <span class="h4 mb-0 fw-bold text-dark" id="totalTexto">$0</span>
                         </div>
 
                         <hr class="text-secondary opacity-25 my-3">
@@ -138,7 +163,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-invernal w-100 shadow-sm mt-2" id="btnEnviar" disabled="@(elegida is null)">
+                        <button type="submit" class="btn btn-invernal w-100 shadow-sm mt-2" id="btnEnviar" disabled>
                             <i class="bi bi-check2-circle me-1"></i> Confirmar pedido
                         </button>
 
@@ -160,39 +185,78 @@
 @section Scripts {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const cards = document.querySelectorAll('.pizza-card');
-    const inputVariedad = document.getElementById('PizzaVariedad');
-    const inputPrecio = document.getElementById('PizzaPrecio');
-    const inputCantidad = document.getElementById('Cantidad');
-    const resumenNombre = document.getElementById('resumenPizzaNombre');
-    const resumenPrecioUnitario = document.getElementById('resumenPrecioUnitario');
-    const totalTexto = document.getElementById('totalTexto');
-
+    const $ = id => document.getElementById(id);
     const money = n => '$' + Number(n).toLocaleString('es-AR');
-    // Selección inicial = la card marcada por el servidor (viene de la DB / ?variedad=)
-    const inicial = document.querySelector('.pizza-card.seleccionada');
-    let seleccion = inicial
-        ? { variedad: inicial.dataset.variedad, precio: parseFloat(inicial.dataset.precio) }
-        : { variedad: '', precio: 0 };
 
-    function actualizarTotales() {
-        const cantidad = Math.min(50, Math.max(1, parseInt(inputCantidad.value) || 1));
-        inputCantidad.value = cantidad;
+    const cards = [...document.querySelectorAll('.pizza-card')];
+    const precios = {};                                   // { "Calabresa": 6800, ... } sale de las cards
+    cards.forEach(c => precios[c.dataset.variedad] = parseFloat(c.dataset.precio));
 
-        inputVariedad.value = seleccion.variedad;
-        inputPrecio.value = String(seleccion.precio);   // punto decimal: el servidor usa cultura invariante
+    let actual = (cards.find(c => c.classList.contains('seleccionada')) || {dataset: {}}).dataset.variedad || '';
+    // El pedido es una lista simple: [{ variedad, cantidad }, ...]
+    const INICIAL = @Json.Serialize(inicial);
+    let pedido = INICIAL.filter(i => precios[i.variedad] !== undefined);
 
-        resumenNombre.textContent = seleccion.variedad;
-        resumenPrecioUnitario.textContent = money(seleccion.precio) + ' c/u';
-        totalTexto.textContent = money(seleccion.precio * cantidad);
+    const cantidad = () => Math.min(50, Math.max(1, parseInt($('Cantidad').value) || 1));
+
+    function dibujar() {
+        // 1) pizza seleccionada
+        $('actualNombre').textContent = actual;
+        $('actualPrecio').textContent = actual ? money(precios[actual]) + ' c/u' : '';
+
+        // 2) lista "Tu pedido"
+        const ul = $('listaPedido');
+        ul.innerHTML = '';
+        let total = 0;
+        pedido.forEach((it, i) => {
+            const sub = precios[it.variedad] * it.cantidad;
+            total += sub;
+
+            const li = document.createElement('li');
+            const cant = document.createElement('span');  cant.className = 'it-cant';    cant.textContent = it.cantidad + ' ×';
+            const nom  = document.createElement('span');  nom.className  = 'it-nombre';  nom.textContent  = it.variedad;
+            const imp  = document.createElement('span');  imp.className  = 'it-sub';     imp.textContent  = money(sub);
+            const del  = document.createElement('button');
+            del.type = 'button'; del.className = 'btn-quitar';
+            del.setAttribute('aria-label', 'Quitar ' + it.variedad);
+            del.innerHTML = '<i class="bi bi-trash"></i>';
+            del.onclick = () => { pedido.splice(i, 1); dibujar(); };
+
+            li.append(cant, nom, imp, del);
+            ul.append(li);
+        });
+
+        $('pedidoVacio').hidden = pedido.length > 0;
+        $('totalTexto').textContent = money(total);
+        $('btnEnviar').disabled = pedido.length === 0;
+
+        // 3) hidden que viajan en el POST: Form.Items[i].Variedad / .Cantidad
+        const box = $('itemsHidden');
+        box.innerHTML = '';
+        pedido.forEach((it, i) => {
+            [['Variedad', it.variedad], ['Cantidad', it.cantidad]].forEach(([campo, valor]) => {
+                const h = document.createElement('input');
+                h.type = 'hidden'; h.name = `Form.Items[${i}].${campo}`; h.value = valor;
+                box.append(h);
+            });
+        });
     }
 
     function elegir(card) {
         cards.forEach(c => { c.classList.remove('seleccionada'); c.setAttribute('aria-checked', 'false'); });
         card.classList.add('seleccionada');
         card.setAttribute('aria-checked', 'true');
-        seleccion = { variedad: card.dataset.variedad, precio: parseFloat(card.dataset.precio) };
-        actualizarTotales();
+        actual = card.dataset.variedad;
+        dibujar();
+    }
+
+    function agregar() {
+        if (!actual) return;
+        const existente = pedido.find(i => i.variedad === actual);
+        if (existente) existente.cantidad = Math.min(50, existente.cantidad + cantidad());   // misma pizza: suma
+        else pedido.push({ variedad: actual, cantidad: cantidad() });
+        $('Cantidad').value = 1;
+        dibujar();
     }
 
     cards.forEach(card => {
@@ -202,17 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.getElementById('btnSumar').addEventListener('click', () => {
-        inputCantidad.value = (parseInt(inputCantidad.value) || 1) + 1;
-        actualizarTotales();
-    });
-    document.getElementById('btnRestar').addEventListener('click', () => {
-        inputCantidad.value = (parseInt(inputCantidad.value) || 1) - 1;
-        actualizarTotales();
-    });
-    inputCantidad.addEventListener('change', actualizarTotales);
+    $('btnSumar').addEventListener('click',  () => { $('Cantidad').value = cantidad() + 1; });
+    $('btnRestar').addEventListener('click', () => { $('Cantidad').value = Math.max(1, cantidad() - 1); });
+    $('Cantidad').addEventListener('change', () => { $('Cantidad').value = cantidad(); });
+    $('Cantidad').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregar(); } });  // Enter no envía el form
+    $('btnAgregar').addEventListener('click', agregar);
 
-    if (inicial) actualizarTotales();
+    dibujar();
 });
 </script>
 }
