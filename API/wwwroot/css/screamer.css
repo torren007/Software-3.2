@@ -1,0 +1,33 @@
+/* ==========================================================
+   screamer.css — easter egg del botón "Contactar a los creadores"
+   (lógica en wwwroot/js/screamer.js)
+   ========================================================== */
+body.screamer-lock{overflow:hidden}
+
+.screamer{
+  position:fixed;inset:0;z-index:2147483647;
+  background:#000;display:grid;place-items:center;
+  overflow:hidden;cursor:none;outline:none;
+}
+.screamer.screamer--listo{cursor:pointer}
+
+.screamer img{
+  width:100vw;height:100vh;object-fit:cover;
+  animation:screamer-sacudon .09s infinite alternate, screamer-zoom 16s linear forwards;
+}
+
+.screamer__aviso{
+  position:absolute;left:0;right:0;bottom:1.5rem;text-align:center;
+  font:500 .95rem var(--m,monospace);color:#fff;opacity:.75;
+  text-shadow:0 0 6px #000;
+}
+
+@keyframes screamer-sacudon{
+  from{transform:translate(-6px,4px) scale(1.04)}
+  to  {transform:translate(6px,-4px) scale(1.08)}
+}
+@keyframes screamer-zoom{
+  from{filter:brightness(1) contrast(1)}
+  to  {filter:brightness(1.25) contrast(1.4)}
+}
+/* base.css ya apaga animaciones con prefers-reduced-motion: queda la imagen fija */

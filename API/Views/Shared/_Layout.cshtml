@@ -12,6 +12,7 @@
     @* CSS compartido por TODAS las vistas *@
     <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/screamer.css" asp-append-version="true" />
 
     @* CSS propio de cada vista: se declara con  @section Styles { <link ...> } *@
     @await RenderSectionAsync("Styles", required: false)
@@ -22,5 +23,6 @@
     @RenderBody()
 
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/screamer.js" asp-append-version="true" defer></script>
 </body>
 </html>
